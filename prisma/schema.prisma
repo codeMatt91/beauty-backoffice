@@ -1,0 +1,109 @@
+// Prisma Schema – Beauty Backoffice
+// Database: Vercel Postgres (serverless PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum PaymentStatus {
+  PAID
+  PENDING
+  OPTIONAL
+}
+
+enum ExpenseCategory {
+  AFFITTO
+  UTENZE
+  MATERIALI
+  PERSONALE
+  MARKETING
+  MANUTENZIONE
+  ALTRO
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(EMPLOYEE)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  appointments Appointment[] @relation("EmployeeAppointments")
+
+  @@map("users")
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
+  phoneNumber String?  @map("phone_number")
+  age         Int?
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  appointments Appointment[]
+
+  @@map("customers")
+}
+
+model Appointment {
+  id            String        @id @default(cuid())
+  customerId    String        @map("customer_id")
+  employeeId    String?       @map("employee_id")
+  serviceType   String        @map("service_type")
+  startTime     DateTime      @map("start_time")
+  endTime       DateTime      @map("end_time")
+  price         Decimal       @db.Decimal(10, 2)
+  paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  employee User?    @relation("EmployeeAppointments", fields: [employeeId], references: [id], onDelete: SetNull)
+
+  @@index([startTime])
+  @@index([customerId])
+  @@index([employeeId])
+  @@map("appointments")
+}
+
+model MonthlyExpense {
+  id          String          @id @default(cuid())
+  amount      Decimal         @db.Decimal(10, 2)
+  description String
+  category    ExpenseCategory @default(ALTRO)
+  date        DateTime
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  @@index([date])
+  @@map("monthly_expenses")
+}
+
+// Tabella per il tracciamento degli archivi di purge
+model PurgeArchive {
+  id          String   @id @default(cuid())
+  filename    String
+  recordCount Int      @map("record_count")
+  dateFrom    DateTime @map("date_from")
+  dateTo      DateTime @map("date_to")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("purge_archives")
+}

@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 340 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 340 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 10% 10%;
+    --primary: 346 77% 49%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 340 10% 96%;
+    --secondary-foreground: 340 10% 10%;
+    --muted: 340 10% 96%;
+    --muted-foreground: 340 5% 45%;
+    --accent: 346 77% 95%;
+    --accent-foreground: 346 77% 30%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 340 10% 90%;
+    --input: 340 10% 90%;
+    --ring: 346 77% 49%;
+    --radius: 0.6rem;
+  }
+
+  .dark {
+    --background: 340 10% 8%;
+    --foreground: 340 5% 95%;
+    --card: 340 10% 10%;
+    --card-foreground: 340 5% 95%;
+    --popover: 340 10% 10%;
+    --popover-foreground: 340 5% 95%;
+    --primary: 346 77% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 340 10% 16%;
+    --secondary-foreground: 340 5% 95%;
+    --muted: 340 10% 16%;
+    --muted-foreground: 340 5% 55%;
+    --accent: 346 50% 20%;
+    --accent-foreground: 346 77% 80%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 340 10% 20%;
+    --input: 340 10% 20%;
+    --ring: 346 77% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Calendar custom styles */
+.appointment-block {
+  @apply rounded-md px-2 py-1 text-xs font-medium truncate cursor-pointer transition-opacity hover:opacity-80;
+}
