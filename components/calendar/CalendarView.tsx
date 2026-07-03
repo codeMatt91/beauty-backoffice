@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import {
   format,
   startOfMonth,
@@ -8,19 +8,15 @@ import {
   startOfWeek,
   endOfWeek,
   addDays,
-  addMonths,
-  subMonths,
-  addWeeks,
-  subWeeks,
   isSameMonth,
   isSameDay,
   isToday,
-  parseISO,
 } from "date-fns";
 import { it } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, CalendarDays, Grid3x3 } from "lucide-react";
 import { cn, formatTime, formatCurrency } from "@/lib/utils";
 import AppointmentModal from "./AppointmentModal";
+import { useState } from "react";
 import { PaymentStatus } from "@prisma/client";
 
 interface Appointment {
@@ -42,9 +38,17 @@ interface Employee {
   name: string;
 }
 
+type ViewMode = "month" | "week";
+
 interface Props {
   appointments: Appointment[];
   employees: Employee[];
+  currentDate: Date;
+  view: ViewMode;
+  isPending?: boolean;
+  onNavigate: (dir: 1 | -1) => void;
+  onViewChange: (view: ViewMode) => void;
+  onGoToToday: () => void;
   onRefresh: () => void;
 }
 
@@ -54,11 +58,17 @@ const STATUS_COLORS: Record<PaymentStatus, string> = {
   OPTIONAL: "bg-slate-100 text-slate-700 border-slate-200",
 };
 
-type ViewMode = "month" | "week";
-
-export default function CalendarView({ appointments, employees, onRefresh }: Props) {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<ViewMode>("month");
+export default function CalendarView({
+  appointments,
+  employees,
+  currentDate,
+  view,
+  isPending,
+  onNavigate,
+  onViewChange,
+  onGoToToday,
+  onRefresh,
+}: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
@@ -73,14 +83,6 @@ export default function CalendarView({ appointments, employees, onRefresh }: Pro
     setSelectedAppointment(apt);
     setSelectedDate(undefined);
     setModalOpen(true);
-  };
-
-  const navigate = (dir: 1 | -1) => {
-    if (view === "month") {
-      setCurrentDate(dir === 1 ? addMonths(currentDate, 1) : subMonths(currentDate, 1));
-    } else {
-      setCurrentDate(dir === 1 ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1));
-    }
   };
 
   const getAppointmentsForDay = useCallback(
@@ -108,7 +110,6 @@ export default function CalendarView({ appointments, employees, onRefresh }: Pro
 
     return (
       <div className="flex-1 overflow-auto">
-        {/* Week day headers */}
         <div className="grid grid-cols-7 border-b border-border">
           {weekDays.map((d) => (
             <div key={d} className="py-2 text-center text-xs font-medium text-muted-foreground">
@@ -117,7 +118,6 @@ export default function CalendarView({ appointments, employees, onRefresh }: Pro
           ))}
         </div>
 
-        {/* Days grid */}
         <div className="grid grid-cols-7 flex-1">
           {days.map((d, idx) => {
             const dayApts = getAppointmentsForDay(d);
@@ -172,11 +172,10 @@ export default function CalendarView({ appointments, employees, onRefresh }: Pro
   function renderWeekView() {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-    const hours = Array.from({ length: 13 }, (_, i) => i + 8); // 8:00 → 20:00
+    const hours = Array.from({ length: 13 }, (_, i) => i + 8);
 
     return (
       <div className="flex-1 overflow-auto">
-        {/* Day headers */}
         <div className="grid grid-cols-8 border-b border-border sticky top-0 bg-card z-10">
           <div className="py-2 text-xs text-muted-foreground text-center">Ora</div>
           {days.map((d) => (
@@ -195,7 +194,6 @@ export default function CalendarView({ appointments, employees, onRefresh }: Pro
           ))}
         </div>
 
-        {/* Time slots */}
         {hours.map((hour) => (
           <div key={hour} className="grid grid-cols-8 border-b border-border min-h-[60px]">
             <div className="px-2 py-1 text-[10px] text-muted-foreground text-right border-r border-border">
@@ -245,32 +243,42 @@ export default function CalendarView({ appointments, employees, onRefresh }: Pro
       {/* Toolbar */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-card">
         <button
-          onClick={() => setCurrentDate(new Date())}
+          onClick={onGoToToday}
           className="px-3 py-1.5 text-sm font-medium rounded-lg border border-border hover:bg-secondary transition-colors"
         >
           Oggi
         </button>
 
         <div className="flex items-center gap-1">
-          <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg hover:bg-secondary">
+          <button
+            onClick={() => onNavigate(-1)}
+            className="p-1.5 rounded-lg hover:bg-secondary"
+            aria-label="Periodo precedente"
+          >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-sm font-semibold text-foreground min-w-[160px] text-center capitalize">
+          <span className={cn(
+            "text-sm font-semibold text-foreground min-w-[160px] text-center capitalize transition-opacity",
+            isPending && "opacity-50"
+          )}>
             {view === "month"
               ? format(currentDate, "MMMM yyyy", { locale: it })
               : `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM", { locale: it })} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM yyyy", { locale: it })}`
             }
           </span>
-          <button onClick={() => navigate(1)} className="p-1.5 rounded-lg hover:bg-secondary">
+          <button
+            onClick={() => onNavigate(1)}
+            className="p-1.5 rounded-lg hover:bg-secondary"
+            aria-label="Periodo successivo"
+          >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          {/* View toggle */}
           <div className="flex items-center rounded-lg border border-border overflow-hidden">
             <button
-              onClick={() => setView("month")}
+              onClick={() => onViewChange("month")}
               className={cn("px-3 py-1.5 text-sm font-medium flex items-center gap-1.5 transition-colors",
                 view === "month" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
               )}
@@ -279,7 +287,7 @@ export default function CalendarView({ appointments, employees, onRefresh }: Pro
               <span className="hidden sm:inline">Mese</span>
             </button>
             <button
-              onClick={() => setView("week")}
+              onClick={() => onViewChange("week")}
               className={cn("px-3 py-1.5 text-sm font-medium flex items-center gap-1.5 transition-colors",
                 view === "week" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
               )}

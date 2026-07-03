@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { ExpenseCategory } from "@prisma/client";
@@ -13,19 +13,17 @@ const expenseSchema = z.object({
   date: z.string().datetime(),
 });
 
-async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user) throw new Error("Non autenticato");
-  if ((session.user as any).role !== "ADMIN") throw new Error("Accesso non autorizzato");
-  return session.user;
-}
-
 export async function getExpenses(from: Date, to: Date) {
   await requireAdmin();
-  return prisma.monthlyExpense.findMany({
+  const expenses = await prisma.monthlyExpense.findMany({
     where: { date: { gte: from, lte: to } },
     orderBy: { date: "desc" },
   });
+  return expenses.map((e) => ({
+    ...e,
+    amount: e.amount.toString(),
+    date: e.date.toISOString(),
+  }));
 }
 
 export async function createExpense(data: z.infer<typeof expenseSchema>) {
@@ -61,7 +59,7 @@ export async function getFinancialSummary(from: Date, to: Date) {
   const [appointments, expenses] = await Promise.all([
     prisma.appointment.findMany({
       where: { startTime: { gte: from, lte: to }, paymentStatus: "PAID" },
-      select: { startTime: true, price: true },
+      select: { startTime: true, price: true, serviceType: true },
     }),
     prisma.monthlyExpense.findMany({
       where: { date: { gte: from, lte: to } },
@@ -69,5 +67,16 @@ export async function getFinancialSummary(from: Date, to: Date) {
     }),
   ]);
 
-  return { appointments, expenses };
+  return {
+    appointments: appointments.map((a) => ({
+      startTime: a.startTime.toISOString(),
+      price: a.price.toString(),
+      serviceType: a.serviceType,
+    })),
+    expenses: expenses.map((e) => ({
+      date: e.date.toISOString(),
+      amount: e.amount.toString(),
+      category: e.category,
+    })),
+  };
 }

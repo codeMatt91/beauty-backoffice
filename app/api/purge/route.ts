@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   try {
     const result = await runPurge(body.olderThanMonths);
 
-    return new NextResponse(result.zipBuffer, {
+    return new NextResponse(new Uint8Array(result.zipBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/zip",

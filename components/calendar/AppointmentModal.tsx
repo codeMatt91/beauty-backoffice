@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import { createAppointment, updateAppointment, deleteAppointment } from "@/actions/appointments";
 import { getCustomers } from "@/actions/customers";
 import { PaymentStatus } from "@prisma/client";
+import * as Dialog from "@radix-ui/react-dialog";
 import { X, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface Customer {
   id: string;
@@ -133,164 +132,163 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-card w-full max-w-lg rounded-2xl shadow-2xl border border-border max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="font-semibold text-foreground">
-            {appointment ? "Modifica appuntamento" : "Nuovo appuntamento"}
-          </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* Cliente */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Cliente *</label>
-            <select
-              value={customerId}
-              onChange={(e) => setCustomerId(e.target.value)}
-              required
-              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">Seleziona cliente</option>
-              {customers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.lastName} {c.firstName}
-                </option>
-              ))}
-            </select>
+    <Dialog.Root open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border border-border focus:outline-none">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+            <Dialog.Title className="font-semibold text-foreground">
+              {appointment ? "Modifica appuntamento" : "Nuovo appuntamento"}
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <button className="p-1.5 rounded-lg hover:bg-secondary" aria-label="Chiudi">
+                <X className="w-4 h-4" />
+              </button>
+            </Dialog.Close>
           </div>
 
-          {/* Dipendente */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Operatrice</label>
-            <select
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">Nessuna assegnazione</option>
-              {employees.map((emp) => (
-                <option key={emp.id} value={emp.id}>{emp.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Servizio */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Prestazione *</label>
-            <select
-              value={serviceType}
-              onChange={(e) => setServiceType(e.target.value)}
-              required
-              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              {SERVICE_TYPES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Orari */}
-          <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleSubmit} className="p-5 space-y-4">
             <div className="space-y-1">
-              <label className="text-sm font-medium">Inizio *</label>
-              <input
-                type="datetime-local"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Fine *</label>
-              <input
-                type="datetime-local"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-          </div>
-
-          {/* Prezzo + Pagamento */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Prezzo (€)</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Pagamento</label>
+              <label className="text-sm font-medium">Cliente *</label>
               <select
-                value={paymentStatus}
-                onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
+                value={customerId}
+                onChange={(e) => setCustomerId(e.target.value)}
+                required
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                {PAYMENT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                <option value="">Seleziona cliente</option>
+                {customers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.lastName} {c.firstName}
+                  </option>
                 ))}
               </select>
             </div>
-          </div>
 
-          {/* Note */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Note</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-            />
-          </div>
-
-          {error && (
-            <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
-              {error}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Operatrice</label>
+              <select
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">Nessuna assegnazione</option>
+                {employees.map((emp) => (
+                  <option key={emp.id} value={emp.id}>{emp.name}</option>
+                ))}
+              </select>
             </div>
-          )}
 
-          <div className="flex items-center gap-2 pt-1">
-            {appointment && (
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Prestazione *</label>
+              <select
+                value={serviceType}
+                onChange={(e) => setServiceType(e.target.value)}
+                required
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                {SERVICE_TYPES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Inizio *</label>
+                <input
+                  type="datetime-local"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Fine *</label>
+                <input
+                  type="datetime-local"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Prezzo (€)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Pagamento</label>
+                <select
+                  value={paymentStatus}
+                  onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {PAYMENT_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Note</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              />
+            </div>
+
+            {error && (
+              <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 pt-1">
+              {appointment && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={loading}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors border border-destructive/20"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Elimina
+                </button>
+              )}
+              <div className="flex-1" />
               <button
                 type="button"
-                onClick={handleDelete}
-                disabled={loading}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors border border-destructive/20"
+                onClick={onClose}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80"
               >
-                <Trash2 className="w-4 h-4" />
-                Elimina
+                Annulla
               </button>
-            )}
-            <div className="flex-1" />
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            >
-              Annulla
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
-              {loading ? "Salvataggio..." : appointment ? "Aggiorna" : "Crea"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              >
+                {loading ? "Salvataggio..." : appointment ? "Aggiorna" : "Crea"}
+              </button>
+            </div>
+          </form>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

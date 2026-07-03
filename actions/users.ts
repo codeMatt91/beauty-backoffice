@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -17,13 +17,6 @@ const createUserSchema = z.object({
 const updateUserSchema = createUserSchema.partial().omit({ password: true }).extend({
   password: z.string().min(8).optional(),
 });
-
-async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user) throw new Error("Non autenticato");
-  if ((session.user as any).role !== "ADMIN") throw new Error("Solo gli Admin possono gestire gli utenti");
-  return session.user;
-}
 
 export async function getEmployees() {
   await requireAdmin();
@@ -69,7 +62,7 @@ export async function updateUser(id: string, data: z.infer<typeof updateUserSche
   await requireAdmin();
   const parsed = updateUserSchema.parse(data);
 
-  const updateData: any = { ...parsed };
+  const updateData: Record<string, unknown> = { ...parsed };
   if (parsed.password) {
     updateData.passwordHash = await bcrypt.hash(parsed.password, 12);
     delete updateData.password;
@@ -87,7 +80,13 @@ export async function updateUser(id: string, data: z.infer<typeof updateUserSche
 
 export async function deleteUser(id: string) {
   const admin = await requireAdmin();
-  if ((admin as any).id === id) throw new Error("Non puoi eliminare il tuo account");
+  if (admin.id === id) throw new Error("Non puoi eliminare il tuo account");
+
+  const targetUser = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+  if (targetUser?.role === "ADMIN") {
+    const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+    if (adminCount <= 1) throw new Error("Non puoi eliminare l'ultimo account Admin");
+  }
 
   await prisma.user.delete({ where: { id } });
   revalidatePath("/employees");

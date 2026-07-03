@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval, eachMonthOfInterval, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval, eachMonthOfInterval } from "date-fns";
 import { it } from "date-fns/locale";
 import { getFinancialSummary, getExpenses, createExpense, deleteExpense } from "@/actions/expenses";
 import FinancialChart from "@/components/finance/FinancialChart";
 import Header from "@/components/layout/Header";
 import { formatCurrency } from "@/lib/utils";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   TrendingUp,
   TrendingDown,
@@ -14,15 +15,23 @@ import {
   Plus,
   Filter,
   Trash2,
-  ChevronDown,
+  X,
 } from "lucide-react";
 import { ExpenseCategory } from "@prisma/client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface FinancialData {
-  appointments: { startTime: string; price: string }[];
+  appointments: { startTime: string; price: string; serviceType: string }[];
   expenses: { date: string; amount: string; category: string }[];
+}
+
+interface ExpenseRecord {
+  id: string;
+  amount: string;
+  description: string;
+  category: string;
+  date: string;
 }
 
 type Granularity = "day" | "month";
@@ -97,67 +106,75 @@ function AddExpenseModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-card w-full max-w-sm rounded-2xl shadow-2xl border border-border">
-        <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold">Nuova spesa</h3>
-        </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-3">
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Importo (€) *</label>
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+    <Dialog.Root open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
+        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-sm rounded-2xl bg-card shadow-2xl border border-border focus:outline-none">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+            <Dialog.Title className="font-semibold">Nuova spesa</Dialog.Title>
+            <Dialog.Close asChild>
+              <button className="p-1.5 rounded-lg hover:bg-secondary" aria-label="Chiudi">
+                <X className="w-4 h-4" />
+              </button>
+            </Dialog.Close>
           </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Descrizione *</label>
-            <input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleSubmit} className="p-5 space-y-3">
             <div className="space-y-1">
-              <label className="text-sm font-medium">Categoria</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                {EXPENSE_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Data</label>
+              <label className="text-sm font-medium">Importo (€) *</label>
               <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
-          </div>
-          <div className="flex gap-2 pt-1">
-            <button type="button" onClick={onClose} className="flex-1 py-2 rounded-lg text-sm font-medium bg-secondary">
-              Annulla
-            </button>
-            <button type="submit" disabled={loading} className="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-white disabled:opacity-50">
-              {loading ? "..." : "Aggiungi"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Descrizione *</label>
+              <input
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Categoria</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {EXPENSE_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Data</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button type="button" onClick={onClose} className="flex-1 py-2 rounded-lg text-sm font-medium bg-secondary">
+                Annulla
+              </button>
+              <button type="submit" disabled={loading} className="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-white disabled:opacity-50">
+                {loading ? "..." : "Aggiungi"}
+              </button>
+            </div>
+          </form>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
@@ -165,7 +182,7 @@ function AddExpenseModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
 
 export default function FinancePage() {
   const [data, setData] = useState<FinancialData>({ appointments: [], expenses: [] });
-  const [expenses, setExpenses] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
   const [loading, startTransition] = useTransition();
 
   // Filters
@@ -183,8 +200,8 @@ export default function FinancePage() {
       getFinancialSummary(from, to),
       getExpenses(from, to),
     ]);
-    setData(fin as any);
-    setExpenses(exp as any);
+    setData(fin);
+    setExpenses(exp as ExpenseRecord[]);
   }
 
   useEffect(() => {
@@ -199,18 +216,18 @@ export default function FinancePage() {
 
     const filteredApts = serviceFilter === "Tutti"
       ? data.appointments
-      : data.appointments.filter((a: any) => a.serviceType === serviceFilter);
+      : data.appointments.filter((a) => a.serviceType === serviceFilter);
 
     if (granularity === "day") {
       const days = eachDayOfInterval({ start: from, end: to });
       return days.map((day) => {
         const dayStr = format(day, "yyyy-MM-dd");
         const entrate = filteredApts
-          .filter((a: any) => format(new Date(a.startTime), "yyyy-MM-dd") === dayStr)
-          .reduce((sum: number, a: any) => sum + parseFloat(a.price), 0);
+          .filter((a) => format(new Date(a.startTime), "yyyy-MM-dd") === dayStr)
+          .reduce((sum, a) => sum + parseFloat(a.price), 0);
         const uscite = data.expenses
-          .filter((e: any) => format(new Date(e.date), "yyyy-MM-dd") === dayStr)
-          .reduce((sum: number, e: any) => sum + parseFloat(e.amount), 0);
+          .filter((e) => format(new Date(e.date), "yyyy-MM-dd") === dayStr)
+          .reduce((sum, e) => sum + parseFloat(e.amount), 0);
         return { label: format(day, "d/M"), entrate, uscite, profitto: entrate - uscite };
       });
     } else {
@@ -218,11 +235,11 @@ export default function FinancePage() {
       return months.map((month) => {
         const monthStr = format(month, "yyyy-MM");
         const entrate = filteredApts
-          .filter((a: any) => format(new Date(a.startTime), "yyyy-MM") === monthStr)
-          .reduce((sum: number, a: any) => sum + parseFloat(a.price), 0);
+          .filter((a) => format(new Date(a.startTime), "yyyy-MM") === monthStr)
+          .reduce((sum, a) => sum + parseFloat(a.price), 0);
         const uscite = data.expenses
-          .filter((e: any) => format(new Date(e.date), "yyyy-MM") === monthStr)
-          .reduce((sum: number, e: any) => sum + parseFloat(e.amount), 0);
+          .filter((e) => format(new Date(e.date), "yyyy-MM") === monthStr)
+          .reduce((sum, e) => sum + parseFloat(e.amount), 0);
         return { label: format(month, "MMM yy", { locale: it }), entrate, uscite, profitto: entrate - uscite };
       });
     }
@@ -269,7 +286,6 @@ export default function FinancePage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            {/* Date range */}
             <div className="flex items-center gap-2">
               <input
                 type="date"
@@ -286,7 +302,6 @@ export default function FinancePage() {
               />
             </div>
 
-            {/* Service filter */}
             <select
               value={serviceFilter}
               onChange={(e) => setServiceFilter(e.target.value)}
@@ -297,7 +312,6 @@ export default function FinancePage() {
               ))}
             </select>
 
-            {/* Granularity */}
             <div className="flex items-center rounded-lg border border-border overflow-hidden">
               <button
                 onClick={() => setGranularity("day")}
@@ -313,7 +327,6 @@ export default function FinancePage() {
               </button>
             </div>
 
-            {/* Quick presets */}
             {presets.map((p) => (
               <button
                 key={p.label}
@@ -380,7 +393,7 @@ export default function FinancePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {expenses.map((e: any) => (
+                {expenses.map((e) => (
                   <tr key={e.id} className="hover:bg-secondary/30">
                     <td className="px-4 py-2.5 text-muted-foreground">
                       {format(new Date(e.date), "dd/MM/yyyy")}
@@ -392,7 +405,7 @@ export default function FinancePage() {
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-right font-medium text-red-600">
-                      -{formatCurrency(e.amount.toString())}
+                      -{formatCurrency(parseFloat(e.amount))}
                     </td>
                     <td className="px-4 py-2.5 text-right">
                       <button
@@ -402,6 +415,7 @@ export default function FinancePage() {
                           loadData();
                         }}
                         className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                        aria-label={`Elimina spesa: ${e.description}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -421,7 +435,7 @@ export default function FinancePage() {
                   <tr>
                     <td colSpan={3} className="px-4 py-2.5 font-semibold text-sm">Totale</td>
                     <td className="px-4 py-2.5 text-right font-semibold text-red-600">
-                      -{formatCurrency(expenses.reduce((s: number, e: any) => s + parseFloat(e.amount.toString()), 0))}
+                      -{formatCurrency(expenses.reduce((s, e) => s + parseFloat(e.amount), 0))}
                     </td>
                     <td />
                   </tr>

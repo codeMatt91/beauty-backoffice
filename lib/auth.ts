@@ -5,11 +5,24 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
 import { z } from "zod";
+import type { SessionUser } from "@/types";
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
+
+export async function requireAuth(): Promise<SessionUser> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Non autenticato");
+  return session.user as unknown as SessionUser;
+}
+
+export async function requireAdmin(): Promise<SessionUser> {
+  const user = await requireAuth();
+  if (user.role !== "ADMIN") throw new Error("Accesso non autorizzato");
+  return user;
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma) as any,

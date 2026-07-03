@@ -88,21 +88,19 @@ export async function runPurge(olderThanMonths: number): Promise<PurgeResult> {
     compressionOptions: { level: 9 },
   });
 
-  // 4. Registra il purge nel DB
-  await prisma.purgeArchive.create({
-    data: {
-      filename: zipFilename,
-      recordCount: appointments.length,
-      dateFrom,
-      dateTo,
-    },
-  });
-
-  // 5. Elimina i record in modo sicuro (prima valida che l'archivio sia stato creato)
+  // 4+5. Transazione atomica: registra e poi elimina — se il delete fallisce il log viene annullato
   const ids = appointments.map((a) => a.id);
-  await prisma.appointment.deleteMany({
-    where: { id: { in: ids } },
-  });
+  await prisma.$transaction([
+    prisma.purgeArchive.create({
+      data: {
+        filename: zipFilename,
+        recordCount: appointments.length,
+        dateFrom,
+        dateTo,
+      },
+    }),
+    prisma.appointment.deleteMany({ where: { id: { in: ids } } }),
+  ]);
 
   return {
     zipBuffer,

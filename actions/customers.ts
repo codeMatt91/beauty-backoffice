@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -13,11 +13,6 @@ const customerSchema = z.object({
   notes: z.string().max(500).optional().nullable(),
 });
 
-async function requireAuth() {
-  const session = await auth();
-  if (!session?.user) throw new Error("Non autenticato");
-  return session.user as any;
-}
 
 export async function getCustomers(search?: string) {
   await requireAuth();

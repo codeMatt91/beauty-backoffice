@@ -1,8 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import {
+  startOfMonth, endOfMonth,
+  startOfWeek, endOfWeek,
+  addMonths, subMonths,
+  addWeeks, subWeeks,
+} from "date-fns";
 import CalendarView from "@/components/calendar/CalendarView";
+import { getAppointments } from "@/actions/appointments";
 import { PaymentStatus } from "@prisma/client";
+
+type ViewMode = "month" | "week";
 
 interface Appointment {
   id: string;
@@ -24,12 +34,43 @@ interface Props {
 }
 
 export default function CalendarClient({ initialAppointments, employees }: Props) {
+  const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [view, setView] = useState<ViewMode>("month");
+  const [isPending, startTransition] = useTransition();
 
-  async function handleRefresh() {
-    // Re-fetch from server action or trigger router refresh
-    // In produzione useReactTransition + router.refresh() per aggiornare senza reload
-    window.location.reload();
+  async function fetchAppointments(date: Date, v: ViewMode) {
+    const from = v === "month" ? startOfMonth(date) : startOfWeek(date, { weekStartsOn: 1 });
+    const to = v === "month" ? endOfMonth(date) : endOfWeek(date, { weekStartsOn: 1 });
+    const data = await getAppointments(from, to);
+    setAppointments(JSON.parse(JSON.stringify(data)) as Appointment[]);
+  }
+
+  function handleNavigate(dir: 1 | -1) {
+    const newDate = view === "month"
+      ? (dir === 1 ? addMonths(currentDate, 1) : subMonths(currentDate, 1))
+      : (dir === 1 ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1));
+    setCurrentDate(newDate);
+    startTransition(() => { fetchAppointments(newDate, view); });
+  }
+
+  function handleViewChange(newView: ViewMode) {
+    setView(newView);
+    startTransition(() => { fetchAppointments(currentDate, newView); });
+  }
+
+  function handleGoToToday() {
+    const today = new Date();
+    setCurrentDate(today);
+    startTransition(() => { fetchAppointments(today, view); });
+  }
+
+  function handleRefresh() {
+    startTransition(() => {
+      fetchAppointments(currentDate, view);
+      router.refresh();
+    });
   }
 
   return (
@@ -37,6 +78,12 @@ export default function CalendarClient({ initialAppointments, employees }: Props
       <CalendarView
         appointments={appointments}
         employees={employees}
+        currentDate={currentDate}
+        view={view}
+        isPending={isPending}
+        onNavigate={handleNavigate}
+        onViewChange={handleViewChange}
+        onGoToToday={handleGoToToday}
         onRefresh={handleRefresh}
       />
     </div>

@@ -104,6 +104,7 @@ export default function CustomerTable({ customers, onEdit, onRefresh }: Props) {
                     <button
                       onClick={() => onEdit(c)}
                       className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground"
+                      aria-label={`Modifica ${c.firstName} ${c.lastName}`}
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
@@ -111,6 +112,7 @@ export default function CustomerTable({ customers, onEdit, onRefresh }: Props) {
                       onClick={() => handleDelete(c.id, `${c.firstName} ${c.lastName}`)}
                       disabled={deleting === c.id}
                       className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive disabled:opacity-50"
+                      aria-label={`Elimina ${c.firstName} ${c.lastName}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -142,12 +144,17 @@ export default function CustomerTable({ customers, onEdit, onRefresh }: Props) {
                 )}
               </div>
               <div className="flex gap-1">
-                <button onClick={() => onEdit(c)} className="p-2 rounded-lg hover:bg-secondary">
+                <button
+                  onClick={() => onEdit(c)}
+                  className="p-2 rounded-lg hover:bg-secondary"
+                  aria-label={`Modifica ${c.firstName} ${c.lastName}`}
+                >
                   <Pencil className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDelete(c.id, `${c.firstName} ${c.lastName}`)}
                   className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"
+                  aria-label={`Elimina ${c.firstName} ${c.lastName}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
