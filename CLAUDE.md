@@ -25,6 +25,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Database columns:** snake_case via Prisma `@map` — do not deviate from this pattern
 - **Prisma model fields:** camelCase in TypeScript, mapped to snake_case in the DB
 
+## Frontend design guidelines
+
+- **Mobile-first:** design for mobile viewport first, then extend with `lg:` breakpoints. The app uses a `Sidebar` (desktop) + `MobileNav` (mobile) split — respect this layout contract.
+- **Tailwind only:** use Tailwind utility classes for all styling. No inline `style` props, no CSS modules, no additional CSS beyond `globals.css`.
+- **Radix UI for interactive primitives:** Dialog, Select, Popover, Tabs, Toast are already installed. Use them instead of building custom accessible components from scratch.
+- **Client Components only when needed:** mark a component `"use client"` only if it uses browser APIs, event handlers, or React state/effects. Prefer Server Components for read-only rendering.
+- **Small, focused components:** a component should do one thing. If a page file exceeds ~150 lines, extract sub-components into `components/<feature>/`.
+- **Semantic HTML + basic a11y:** use `<button>` for actions, `<a>` for navigation, add `aria-label` on icon-only buttons.
+
+## Vercel & React best practices
+
+### Free-tier limits (stay within these)
+
+- Postgres: 256 MB storage, 60 compute hours/month, 100 000 rows max per query result
+- Serverless functions: 100 GB-hours/month, 10 s execution timeout on Hobby plan
+- Cron jobs: 2 max on Hobby plan (currently using 1 for WhatsApp reminders)
+
+### Next.js / React
+
+- **Prefer Server Components** for data-fetching pages — they run at request time, add zero JS to the client bundle, and can query Prisma directly (see `/calendar` pattern).
+- **`revalidatePath`** must be called after every mutation in a Server Action to invalidate the Next.js cache for the affected route.
+- **Serialize before passing to Client:** `Decimal` and `Date` objects from Prisma cannot cross the server/client boundary — always convert with `.toString()` / `.toISOString()` and use `JSON.parse(JSON.stringify(...))` for the full prop object.
+- **`NEXT_PUBLIC_` prefix** is required for any env var that must be readable in Client Components. Never add this prefix to secrets.
+- **Avoid large client-side dependencies:** check bundle impact before adding a new `npm` package. Prefer tree-shakable imports (`import { foo } from 'lib'` not `import lib from 'lib'`).
+- **`useTransition` for non-urgent updates:** wrap expensive state updates (e.g., financial chart re-computation on filter change) in `startTransition` to keep the UI responsive.
+
 ## Commands
 
 ```bash
@@ -50,6 +76,19 @@ npm run db:seed      # Seed the database (tsx prisma/seed.ts)
 - `app/api/purge/` — data archiving endpoint (ADMIN only)
 
 The root dashboard route (`/`) immediately redirects to `/calendar`.
+
+### Pages
+
+| Route | Access | Type | Description |
+|---|---|---|---|
+| `/login` | Public | Client | Credentials login form; redirects to `/calendar` if already authenticated |
+| `/calendar` | All | **Server → Client** | Fetches current-month appointments + all employees directly via Prisma (no Server Action), serializes `Decimal`/`Date` with `JSON.parse(JSON.stringify(...))`, then passes to `CalendarClient.tsx`. Month navigation re-fetches via the `getAppointments` Server Action |
+| `/customers` | All | Client | Customer registry — `CustomerTable` + `CustomerForm` modal for create/edit via `actions/customers.ts` |
+| `/employees` | ADMIN | Client | User account management — inline `UserModal` for create/edit/delete via `actions/users.ts` |
+| `/finance` | ADMIN | Client | Financial dashboard — date-range + service + granularity filters, KPI cards, Recharts chart (`FinancialChart`), expenses table with add/delete via `actions/expenses.ts` |
+| `/settings` | ADMIN | Client | Data purge (calls `POST /api/purge`, auto-downloads the ZIP response) and WhatsApp cron status display |
+
+**Key pattern — calendar page data flow:** `CalendarPage` (Server Component) queries Prisma directly and passes serialized props to `CalendarClient` (Client Component). `Decimal` fields must always be `.toString()`-ed before crossing the server/client boundary.
 
 ### Auth & roles
 
