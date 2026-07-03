@@ -7,8 +7,8 @@ import { z } from "zod";
 import { PaymentStatus } from "@prisma/client";
 
 const appointmentBaseSchema = z.object({
-  customerId: z.string().cuid(),
-  employeeId: z.string().cuid().optional().nullable(),
+  customerId: z.string().min(1),
+  employeeId: z.string().min(1).optional().nullable(),
   serviceType: z.string().min(2).max(100),
   startTime: z.string().datetime(),
   endTime: z.string().datetime(),
