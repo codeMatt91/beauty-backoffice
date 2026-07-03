@@ -52,7 +52,7 @@ export async function createAppointment(data: z.infer<typeof appointmentBaseSche
   });
 
   revalidatePath("/calendar");
-  return appointment;
+  return { ...appointment, price: appointment.price.toString() };
 }
 
 export async function updateAppointment(id: string, data: Partial<z.infer<typeof appointmentBaseSchema>>) {
@@ -69,7 +69,7 @@ export async function updateAppointment(id: string, data: Partial<z.infer<typeof
   });
 
   revalidatePath("/calendar");
-  return appointment;
+  return { ...appointment, price: appointment.price.toString() };
 }
 
 export async function deleteAppointment(id: string) {
