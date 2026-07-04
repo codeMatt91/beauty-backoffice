@@ -33,7 +33,7 @@ export async function createExpense(data: z.infer<typeof expenseSchema>) {
     data: { ...parsed, date: new Date(parsed.date) },
   });
   revalidatePath("/finance");
-  return expense;
+  return { ...expense, amount: expense.amount.toString(), date: expense.date.toISOString() };
 }
 
 export async function updateExpense(id: string, data: z.infer<typeof expenseSchema>) {
@@ -44,7 +44,7 @@ export async function updateExpense(id: string, data: z.infer<typeof expenseSche
     data: { ...parsed, date: new Date(parsed.date) },
   });
   revalidatePath("/finance");
-  return expense;
+  return { ...expense, amount: expense.amount.toString(), date: expense.date.toISOString() };
 }
 
 export async function deleteExpense(id: string) {
