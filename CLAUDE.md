@@ -146,6 +146,10 @@ WHATSAPP_PROVIDER=     # "twilio" | "meta"
 CRON_SECRET=
 ```
 
+## Agent usage rules
+
+**Always invoke `/brainstorming` before spawning any custom agent** (`fullstack-code-reviewer`, `backend-engineer`, or any future project agent). Use brainstorming to clarify the approach, surface edge cases, and frame the task clearly before delegating it to an agent.
+
 ## Claude Code skills
 
 Use these skills in the situations described:
