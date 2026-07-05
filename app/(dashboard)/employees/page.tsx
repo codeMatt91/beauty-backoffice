@@ -37,15 +37,17 @@ function UserModal({
     setLoading(true);
     setError(null);
     try {
-      if (user) {
-        await updateUser(user.id, { name, email, role, ...(password ? { password } : {}) });
-      } else {
-        await createUser({ name, email, password, role });
+      const result = user
+        ? await updateUser(user.id, { name, email, role, ...(password ? { password } : {}) })
+        : await createUser({ name, email, password, role });
+      if (!result.success) {
+        setError(result.error);
+        return;
       }
       onSaved();
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch {
+      setError("Errore durante il salvataggio. Riprova.");
     } finally {
       setLoading(false);
     }
@@ -111,6 +113,7 @@ export default function EmployeesPage() {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function load() {
     const data = await getAllUsers();
@@ -121,11 +124,16 @@ export default function EmployeesPage() {
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Eliminare l'account di ${name}?`)) return;
+    setDeleteError(null);
     try {
-      await deleteUser(id);
+      const result = await deleteUser(id);
+      if (!result.success) {
+        setDeleteError(result.error);
+        return;
+      }
       load();
-    } catch (err: any) {
-      alert(err.message);
+    } catch {
+      setDeleteError("Errore durante l'eliminazione. Riprova.");
     }
   }
 
@@ -133,6 +141,12 @@ export default function EmployeesPage() {
     <div className="flex flex-col h-full">
       <Header title="Gestione Dipendenti" userName="" />
       <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-4">
+        {deleteError && (
+          <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
+            {deleteError}
+          </div>
+        )}
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <UserCog className="w-5 h-5 text-primary" />

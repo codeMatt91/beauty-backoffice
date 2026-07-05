@@ -5,12 +5,15 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { ExpenseCategory } from "@prisma/client";
+import { ActionResult, zodErrorToMessage } from "@/lib/actionResult";
 
 const expenseSchema = z.object({
-  amount: z.coerce.number().min(0.01),
-  description: z.string().min(2).max(200),
+  amount: z.coerce
+    .number({ invalid_type_error: "L'importo deve essere un numero." })
+    .min(0.01, "L'importo deve essere maggiore di zero."),
+  description: z.string().min(2, "La descrizione della spesa è obbligatoria.").max(200, "La descrizione è troppo lunga."),
   category: z.nativeEnum(ExpenseCategory).default("ALTRO"),
-  date: z.string().datetime(),
+  date: z.string().datetime({ message: "Data della spesa non valida." }),
 });
 
 export async function getExpenses(from: Date, to: Date) {
@@ -26,25 +29,27 @@ export async function getExpenses(from: Date, to: Date) {
   }));
 }
 
-export async function createExpense(data: z.infer<typeof expenseSchema>) {
+export async function createExpense(data: z.infer<typeof expenseSchema>): Promise<ActionResult> {
   await requireAdmin();
-  const parsed = expenseSchema.parse(data);
-  const expense = await prisma.monthlyExpense.create({
-    data: { ...parsed, date: new Date(parsed.date) },
+  const parsed = expenseSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: zodErrorToMessage(parsed.error) };
+  await prisma.monthlyExpense.create({
+    data: { ...parsed.data, date: new Date(parsed.data.date) },
   });
   revalidatePath("/finance");
-  return { ...expense, amount: expense.amount.toString(), date: expense.date.toISOString() };
+  return { success: true, data: null };
 }
 
-export async function updateExpense(id: string, data: z.infer<typeof expenseSchema>) {
+export async function updateExpense(id: string, data: z.infer<typeof expenseSchema>): Promise<ActionResult> {
   await requireAdmin();
-  const parsed = expenseSchema.parse(data);
-  const expense = await prisma.monthlyExpense.update({
+  const parsed = expenseSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: zodErrorToMessage(parsed.error) };
+  await prisma.monthlyExpense.update({
     where: { id },
-    data: { ...parsed, date: new Date(parsed.date) },
+    data: { ...parsed.data, date: new Date(parsed.data.date) },
   });
   revalidatePath("/finance");
-  return { ...expense, amount: expense.amount.toString(), date: expense.date.toISOString() };
+  return { success: true, data: null };
 }
 
 export async function deleteExpense(id: string) {

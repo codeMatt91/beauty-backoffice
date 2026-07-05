@@ -83,6 +83,7 @@ function StatCard({ label, value, icon: Icon, trend }: {
 
 function AddExpenseModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<ExpenseCategory>("ALTRO");
@@ -91,15 +92,22 @@ function AddExpenseModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
-      await createExpense({
+      const result = await createExpense({
         amount: parseFloat(amount),
         description,
         category,
         date: new Date(date).toISOString(),
       });
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
       onSaved();
       onClose();
+    } catch {
+      setError("Errore durante il salvataggio. Riprova.");
     } finally {
       setLoading(false);
     }
@@ -163,6 +171,11 @@ function AddExpenseModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
                 />
               </div>
             </div>
+            {error && (
+              <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
+                {error}
+              </div>
+            )}
             <div className="flex gap-2 pt-1">
               <button type="button" onClick={onClose} className="flex-1 py-2 rounded-lg text-sm font-medium bg-secondary">
                 Annulla

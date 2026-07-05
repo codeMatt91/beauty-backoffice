@@ -102,16 +102,18 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
         notes: notes || null,
       };
 
-      if (appointment) {
-        await updateAppointment(appointment.id, data);
-      } else {
-        await createAppointment(data);
+      const result = appointment
+        ? await updateAppointment(appointment.id, data)
+        : await createAppointment(data);
+      if (!result.success) {
+        setError(result.error);
+        return;
       }
 
       onSaved();
       onClose();
-    } catch (err: any) {
-      setError(err.message ?? "Errore durante il salvataggio");
+    } catch {
+      setError("Errore durante il salvataggio. Riprova.");
     } finally {
       setLoading(false);
     }
@@ -124,8 +126,8 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
       await deleteAppointment(appointment.id);
       onSaved();
       onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch {
+      setError("Errore durante l'eliminazione. Riprova.");
     } finally {
       setLoading(false);
     }

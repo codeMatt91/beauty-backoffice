@@ -46,15 +46,17 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
     };
 
     try {
-      if (customer) {
-        await updateCustomer(customer.id, data);
-      } else {
-        await createCustomer(data);
+      const result = customer
+        ? await updateCustomer(customer.id, data)
+        : await createCustomer(data);
+      if (!result.success) {
+        setError(result.error);
+        return;
       }
       onSaved();
       onClose();
-    } catch (err: any) {
-      setError(err.message ?? "Errore durante il salvataggio");
+    } catch {
+      setError("Errore durante il salvataggio. Riprova.");
     } finally {
       setLoading(false);
     }

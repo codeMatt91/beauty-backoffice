@@ -6,16 +6,17 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { Role } from "@prisma/client";
+import { ActionResult, zodErrorToMessage } from "@/lib/actionResult";
 
 const createUserSchema = z.object({
-  name: z.string().min(2).max(80),
-  email: z.string().email(),
-  password: z.string().min(8),
+  name: z.string().min(2, "Il nome è obbligatorio (min. 2 caratteri).").max(80, "Il nome è troppo lungo."),
+  email: z.string().email("Inserisci un indirizzo email valido."),
+  password: z.string().min(8, "La password deve contenere almeno 8 caratteri."),
   role: z.nativeEnum(Role).default("EMPLOYEE"),
 });
 
 const updateUserSchema = createUserSchema.partial().omit({ password: true }).extend({
-  password: z.string().min(8).optional(),
+  password: z.string().min(8, "La password deve contenere almeno 8 caratteri.").optional(),
 });
 
 export async function getEmployees() {
@@ -35,59 +36,62 @@ export async function getAllUsers() {
   });
 }
 
-export async function createUser(data: z.infer<typeof createUserSchema>) {
+export async function createUser(data: z.infer<typeof createUserSchema>): Promise<ActionResult> {
   await requireAdmin();
-  const parsed = createUserSchema.parse(data);
+  const parsed = createUserSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: zodErrorToMessage(parsed.error) };
 
-  const existing = await prisma.user.findUnique({ where: { email: parsed.email } });
-  if (existing) throw new Error("Email già in uso");
+  const existing = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+  if (existing) return { success: false, error: "Questa email è già in uso." };
 
-  const passwordHash = await bcrypt.hash(parsed.password, 12);
+  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
 
-  const user = await prisma.user.create({
+  await prisma.user.create({
     data: {
-      name: parsed.name,
-      email: parsed.email,
+      name: parsed.data.name,
+      email: parsed.data.email,
       passwordHash,
-      role: parsed.role,
+      role: parsed.data.role,
     },
     select: { id: true, name: true, email: true, role: true, createdAt: true },
   });
 
   revalidatePath("/employees");
-  return user;
+  return { success: true, data: null };
 }
 
-export async function updateUser(id: string, data: z.infer<typeof updateUserSchema>) {
+export async function updateUser(id: string, data: z.infer<typeof updateUserSchema>): Promise<ActionResult> {
   await requireAdmin();
-  const parsed = updateUserSchema.parse(data);
+  const parsed = updateUserSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: zodErrorToMessage(parsed.error) };
 
-  const updateData: Record<string, unknown> = { ...parsed };
-  if (parsed.password) {
-    updateData.passwordHash = await bcrypt.hash(parsed.password, 12);
+  const updateData: Record<string, unknown> = { ...parsed.data };
+  if (parsed.data.password) {
+    updateData.passwordHash = await bcrypt.hash(parsed.data.password, 12);
     delete updateData.password;
   }
 
-  const user = await prisma.user.update({
+  await prisma.user.update({
     where: { id },
     data: updateData,
     select: { id: true, name: true, email: true, role: true, createdAt: true },
   });
 
   revalidatePath("/employees");
-  return user;
+  return { success: true, data: null };
 }
 
-export async function deleteUser(id: string) {
+export async function deleteUser(id: string): Promise<ActionResult> {
   const admin = await requireAdmin();
-  if (admin.id === id) throw new Error("Non puoi eliminare il tuo account");
+  if (admin.id === id) return { success: false, error: "Non puoi eliminare il tuo account." };
 
   const targetUser = await prisma.user.findUnique({ where: { id }, select: { role: true } });
   if (targetUser?.role === "ADMIN") {
     const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
-    if (adminCount <= 1) throw new Error("Non puoi eliminare l'ultimo account Admin");
+    if (adminCount <= 1) return { success: false, error: "Non puoi eliminare l'ultimo account Admin." };
   }
 
   await prisma.user.delete({ where: { id } });
   revalidatePath("/employees");
+  return { success: true, data: null };
 }
