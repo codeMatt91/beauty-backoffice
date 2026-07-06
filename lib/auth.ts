@@ -3,34 +3,18 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { Role } from "@prisma/client";
 import { z } from "zod";
 import type { SessionUser } from "@/types";
+import { authConfig } from "../auth.config";
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
 
-export async function requireAuth(): Promise<SessionUser> {
-  const session = await auth();
-  if (!session?.user) throw new Error("Non autenticato");
-  return session.user as unknown as SessionUser;
-}
-
-export async function requireAdmin(): Promise<SessionUser> {
-  const user = await requireAuth();
-  if (user.role !== "ADMIN") throw new Error("Accesso non autorizzato");
-  return user;
-}
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma) as any,
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
   providers: [
     Credentials({
       async authorize(credentials) {
@@ -57,20 +41,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as any).role as Role;
-      }
-      return token;
-    },
-    session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        (session.user as any).role = token.role as Role;
-      }
-      return session;
-    },
-  },
 });
+
+export async function requireAuth(): Promise<SessionUser> {
+  const session = await auth();
+  if (!session?.user) throw new Error("Non autenticato");
+  return session.user as unknown as SessionUser;
+}
+
+export async function requireAdmin(): Promise<SessionUser> {
+  const user = await requireAuth();
+  if (user.role !== "ADMIN") throw new Error("Accesso non autorizzato");
+  return user;
+}
