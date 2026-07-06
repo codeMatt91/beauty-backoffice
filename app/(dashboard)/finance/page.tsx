@@ -16,7 +16,9 @@ import {
   Filter,
   Trash2,
   X,
+  Download,
 } from "lucide-react";
+import { exportFinancePDF } from "@/lib/exportFinancePDF";
 import { ExpenseCategory } from "@prisma/client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -204,6 +206,8 @@ export default function FinancePage() {
   const [serviceFilter, setServiceFilter] = useState("Tutti");
   const [granularity, setGranularity] = useState<Granularity>("day");
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
+  const [exportingMonth, setExportingMonth] = useState(false);
+  const [exportingYear, setExportingYear] = useState(false);
 
   async function loadData() {
     const from = new Date(dateFrom);
@@ -349,6 +353,32 @@ export default function FinancePage() {
                 {p.label}
               </button>
             ))}
+
+            <button
+              onClick={async () => {
+                setExportingMonth(true);
+                try { await exportFinancePDF("month"); }
+                finally { setExportingMonth(false); }
+              }}
+              disabled={exportingMonth}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5" />
+              {exportingMonth ? "..." : "Esporta mese"}
+            </button>
+
+            <button
+              onClick={async () => {
+                setExportingYear(true);
+                try { await exportFinancePDF("year"); }
+                finally { setExportingYear(false); }
+              }}
+              disabled={exportingYear}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5" />
+              {exportingYear ? "..." : "Esporta anno"}
+            </button>
           </div>
         </div>
 
