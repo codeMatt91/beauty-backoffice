@@ -18,16 +18,8 @@ export async function renderPieChart(
         {
           data: slices.map((s) => s.value),
           backgroundColor: [
-            "#4e79a7",
-            "#f28e2b",
-            "#e15759",
-            "#76b7b2",
-            "#59a14f",
-            "#edc948",
-            "#b07aa1",
-            "#ff9da7",
-            "#9c755f",
-            "#bab0ac",
+            "#6366f1", "#10b981", "#f59e0b", "#ef4444",
+            "#8b5cf6", "#06b6d4", "#f97316", "#84cc16",
           ],
         },
       ],
@@ -65,8 +57,8 @@ export async function renderBarLineChart(
   }[]
 ): Promise<string> {
   const canvas = document.createElement("canvas");
-  canvas.width = 600;
-  canvas.height = 350;
+  canvas.width = 800;
+  canvas.height = 320;
   canvas.style.cssText = "visibility:hidden;position:absolute;top:-9999px";
   document.body.appendChild(canvas);
 
@@ -80,7 +72,7 @@ export async function renderBarLineChart(
           type: "bar",
           label: "Entrate",
           data: months.map((m) => m.entrate),
-          backgroundColor: "rgba(78, 121, 167, 0.7)",
+          backgroundColor: "#10b981",
           borderColor: "#4e79a7",
           borderWidth: 1,
           yAxisID: "y",
@@ -89,7 +81,7 @@ export async function renderBarLineChart(
           type: "bar",
           label: "Uscite",
           data: months.map((m) => m.uscite),
-          backgroundColor: "rgba(225, 87, 89, 0.7)",
+          backgroundColor: "#ef4444",
           borderColor: "#e15759",
           borderWidth: 1,
           yAxisID: "y",
@@ -98,8 +90,8 @@ export async function renderBarLineChart(
           type: "line",
           label: "Netto",
           data: months.map((m) => m.netto),
-          borderColor: "#59a14f",
-          backgroundColor: "rgba(89, 161, 79, 0.1)",
+          borderColor: "#111827",
+          backgroundColor: "transparent",
           borderWidth: 2,
           pointRadius: 4,
           fill: false,
