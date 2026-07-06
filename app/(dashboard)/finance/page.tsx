@@ -396,8 +396,15 @@ export default function FinancePage() {
           </div>
 
           {exportError !== null && (
-            <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
-              {exportError}
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive flex items-center justify-between gap-2">
+              <span>{exportError}</span>
+              <button
+                onClick={() => setExportError(null)}
+                aria-label="Chiudi errore"
+                className="shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
         </div>
