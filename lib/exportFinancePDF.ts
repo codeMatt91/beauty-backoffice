@@ -9,7 +9,6 @@ import {
 } from "date-fns";
 import { it } from "date-fns/locale";
 import { getFinancialSummary, getExpenses } from "@/actions/expenses";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { renderPieChart, renderBarLineChart } from "./chartToImage";
 
 function formatEur(amount: number): string {

@@ -26,6 +26,7 @@ export async function renderPieChart(
     },
     options: {
       animation: false,
+      responsive: false,
       plugins: {
         title: {
           display: true,
@@ -42,10 +43,13 @@ export async function renderPieChart(
   // Wait for the chart to finish rendering
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
 
-  const dataUrl = canvas.toDataURL("image/png");
-  chart.destroy();
-  canvas.remove();
-  return dataUrl;
+  try {
+    const dataUrl = canvas.toDataURL("image/png");
+    chart.destroy();
+    return dataUrl;
+  } finally {
+    canvas.remove();
+  }
 }
 
 export async function renderBarLineChart(
@@ -129,8 +133,11 @@ export async function renderBarLineChart(
   // Wait for the chart to finish rendering
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
 
-  const dataUrl = canvas.toDataURL("image/png");
-  chart.destroy();
-  canvas.remove();
-  return dataUrl;
+  try {
+    const dataUrl = canvas.toDataURL("image/png");
+    chart.destroy();
+    return dataUrl;
+  } finally {
+    canvas.remove();
+  }
 }
