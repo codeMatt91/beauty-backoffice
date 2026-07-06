@@ -162,6 +162,82 @@ export async function exportFinancePDF(
     y += pieH + 12;
   }
 
+  // ── Annual: bar chart + monthly table ───────────────────────────────────────
+  if (period === "year") {
+    const year = now.getFullYear();
+    const monthlyData = Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(year, i, 1);
+      const monthStr = format(d, "yyyy-MM");
+      const label = format(d, "MMM", { locale: it });
+      const entrMese = summary.appointments
+        .filter((a) => format(new Date(a.startTime), "yyyy-MM") === monthStr)
+        .reduce((s, a) => s + parseFloat(a.price), 0);
+      const uscMese = summary.expenses
+        .filter((e) => format(new Date(e.date), "yyyy-MM") === monthStr)
+        .reduce((s, e) => s + parseFloat(e.amount), 0);
+      return { label, entrate: entrMese, uscite: uscMese, netto: entrMese - uscMese };
+    });
+
+    const barImg = await renderBarLineChart(monthlyData);
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Andamento mensile", 14, y);
+    y += 6;
+    doc.addImage(barImg, "PNG", 14, y, 182, 70);
+    y += 70 + 12;
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Riepilogo mensile", 14, y);
+    y += 4;
+
+    const nettoValues = monthlyData.map((m) => m.netto);
+
+    autoTable(doc, {
+      startY: y,
+      head: [["Mese", "Entrate", "Uscite", "Netto"]],
+      body: monthlyData.map((m) => [
+        m.label.charAt(0).toUpperCase() + m.label.slice(1),
+        formatEur(m.entrate),
+        formatEur(m.uscite),
+        formatEur(m.netto),
+      ]),
+      foot: [
+        [
+          "Totale annuale",
+          formatEur(monthlyData.reduce((s, m) => s + m.entrate, 0)),
+          formatEur(monthlyData.reduce((s, m) => s + m.uscite, 0)),
+          formatEur(monthlyData.reduce((s, m) => s + m.netto, 0)),
+        ],
+      ],
+      theme: "striped",
+      headStyles: { fillColor: [40, 40, 40] },
+      footStyles: { fillColor: [40, 40, 40], textColor: 255, fontStyle: "bold" },
+      styles: { fontSize: 9 },
+      columnStyles: {
+        1: { halign: "right" },
+        2: { halign: "right" },
+        3: { halign: "right" },
+      },
+      didParseCell: (data) => {
+        if (data.section === "body" && data.column.index === 3) {
+          const netto = nettoValues[data.row.index];
+          if (netto >= 0) {
+            data.cell.styles.fillColor = [209, 250, 229] as [number, number, number];
+            data.cell.styles.textColor = [6, 95, 70] as [number, number, number];
+          } else {
+            data.cell.styles.fillColor = [254, 226, 226] as [number, number, number];
+            data.cell.styles.textColor = [153, 27, 27] as [number, number, number];
+          }
+        }
+      },
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    y = (doc as any).lastAutoTable.finalY + 12;
+  }
+
   // ── Appointments ─────────────────────────────────────────────────────────────
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
