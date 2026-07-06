@@ -1,10 +1,14 @@
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
+const { auth } = NextAuth(authConfig);
 
 const PUBLIC_ROUTES = ["/login"];
 const ADMIN_ONLY_ROUTES = ["/finance", "/employees", "/settings"];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default auth((req: NextRequest & { auth: any }) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
