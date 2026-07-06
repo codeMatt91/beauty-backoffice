@@ -9,6 +9,8 @@ import {
 } from "date-fns";
 import { it } from "date-fns/locale";
 import { getFinancialSummary, getExpenses } from "@/actions/expenses";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { renderPieChart, renderBarLineChart } from "./chartToImage";
 
 function formatEur(amount: number): string {
   return new Intl.NumberFormat("it-IT", {
@@ -104,6 +106,61 @@ export async function exportFinancePDF(
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   y = (doc as any).lastAutoTable.finalY + 12;
+
+  // ── Pie charts (month only) ──────────────────────────────────────────────────
+  if (period === "month") {
+    // Slices: revenue by service type
+    const serviceMap = new Map<string, number>();
+    for (const a of summary.appointments) {
+      serviceMap.set(
+        a.serviceType,
+        (serviceMap.get(a.serviceType) ?? 0) + parseFloat(a.price)
+      );
+    }
+    const serviceSlices = Array.from(serviceMap.entries()).map(
+      ([label, value]) => ({ label, value })
+    );
+
+    // Slices: expenses by category
+    const expenseMap = new Map<string, number>();
+    for (const e of summary.expenses) {
+      expenseMap.set(
+        e.category,
+        (expenseMap.get(e.category) ?? 0) + parseFloat(e.amount)
+      );
+    }
+    const expenseSlices = Array.from(expenseMap.entries()).map(
+      ([label, value]) => ({ label, value })
+    );
+
+    const pieY = y;
+    const pieW = 80;
+    const pieH = 80;
+
+    // Left pie: revenue by service
+    if (serviceSlices.length > 0) {
+      const serviceImg = await renderPieChart(serviceSlices, "Entrate per servizio");
+      doc.addImage(serviceImg, "PNG", 14, pieY, pieW, pieH);
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      doc.text("Nessun dato", 14 + pieW / 2, pieY + pieH / 2, { align: "center" });
+      doc.setTextColor(0);
+    }
+
+    // Right pie: expenses by category
+    if (expenseSlices.length > 0) {
+      const expenseImg = await renderPieChart(expenseSlices, "Spese per categoria");
+      doc.addImage(expenseImg, "PNG", 108, pieY, pieW, pieH);
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      doc.text("Nessun dato", 108 + pieW / 2, pieY + pieH / 2, { align: "center" });
+      doc.setTextColor(0);
+    }
+
+    y += pieH + 12;
+  }
 
   // ── Appointments ─────────────────────────────────────────────────────────────
   doc.setFontSize(11);
