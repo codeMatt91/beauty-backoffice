@@ -18,7 +18,6 @@ import {
   X,
   Download,
 } from "lucide-react";
-import { exportFinancePDF } from "@/lib/exportFinancePDF";
 import { ExpenseCategory } from "@prisma/client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -208,6 +207,7 @@ export default function FinancePage() {
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
   const [exportingMonth, setExportingMonth] = useState(false);
   const [exportingYear, setExportingYear] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   async function loadData() {
     const from = new Date(dateFrom);
@@ -356,9 +356,16 @@ export default function FinancePage() {
 
             <button
               onClick={async () => {
+                setExportError(null);
                 setExportingMonth(true);
-                try { await exportFinancePDF("month"); }
-                finally { setExportingMonth(false); }
+                try {
+                  const { exportFinancePDF } = await import("@/lib/exportFinancePDF");
+                  await exportFinancePDF("month");
+                } catch (e) {
+                  setExportError(e instanceof Error ? e.message : "Errore durante l'export. Riprova.");
+                } finally {
+                  setExportingMonth(false);
+                }
               }}
               disabled={exportingMonth}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
@@ -369,9 +376,16 @@ export default function FinancePage() {
 
             <button
               onClick={async () => {
+                setExportError(null);
                 setExportingYear(true);
-                try { await exportFinancePDF("year"); }
-                finally { setExportingYear(false); }
+                try {
+                  const { exportFinancePDF } = await import("@/lib/exportFinancePDF");
+                  await exportFinancePDF("year");
+                } catch (e) {
+                  setExportError(e instanceof Error ? e.message : "Errore durante l'export. Riprova.");
+                } finally {
+                  setExportingYear(false);
+                }
               }}
               disabled={exportingYear}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
@@ -380,6 +394,12 @@ export default function FinancePage() {
               {exportingYear ? "..." : "Esporta anno"}
             </button>
           </div>
+
+          {exportError !== null && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
+              {exportError}
+            </div>
+          )}
         </div>
 
         {/* ── KPI Cards ── */}
