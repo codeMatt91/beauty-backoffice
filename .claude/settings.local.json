@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(git -C /Users/matteoimbimbo/Desktop/beauty-backoffice rev-parse --show-toplevel)",
+      "Bash(cat \"$\\(git -C /Users/matteoimbimbo/Desktop/beauty-backoffice rev-parse --show-toplevel\\)/.superpowers/sdd/progress.md\")",
+      "Bash(git *)",
+      "Bash(npm run *)",
+      "Bash(tee /tmp/lint_output.txt)",
+      "Bash(cd *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief /Users/matteoimbimbo/Desktop/beauty-backoffice/docs/superpowers/plans/2026-07-06-finance-pdf-export.md 2)",
+      "Bash(npx next *)",
+      "Bash(npx eslint *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief $PLAN *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(npx tsx *)",
+      "Bash(npx playwright *)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(npm install *)",
+      "Bash(bash *)",
+      "Bash(lsof -ti:3002)",
+      "Bash(xargs kill -9)",
+      "Bash(curl -sf http://localhost:3002/ -o /dev/null)",
+      "Bash(node -e \"require\\('@playwright/test'\\)\")",
+      "Bash(node -e \"require\\('playwright-core'\\)\")",
+      "Bash(npm test *)",
+      "Bash(echo \"EXIT_CODE:$?\")"
+    ]
+  }
+}
