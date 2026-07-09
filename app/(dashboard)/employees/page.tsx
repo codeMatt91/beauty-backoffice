@@ -4,17 +4,9 @@ import { useState, useEffect } from "react";
 import { getAllUsers, createUser, updateUser, deleteUser } from "@/actions/users";
 import Header from "@/components/layout/Header";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, Pencil, Trash2, UserCog, Shield, User, X } from "lucide-react";
+import { Plus, UserCog, X } from "lucide-react";
 import { Role } from "@prisma/client";
-import { formatDate } from "@/lib/utils";
-
-interface UserRecord {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  createdAt: Date;
-}
+import UserTable, { UserRecord } from "@/components/employees/UserTable";
 
 function UserModal({
   user,
@@ -162,56 +154,11 @@ export default function EmployeesPage() {
           </button>
         </div>
 
-        <div className="rounded-xl border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-secondary">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Nome</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Email</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Ruolo</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Registrato</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {users.map((u) => (
-                <tr key={u.id} className="hover:bg-secondary/30">
-                  <td className="px-4 py-3 font-medium">{u.name}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      u.role === "ADMIN"
-                        ? "bg-primary/10 text-primary"
-                        : "bg-secondary text-muted-foreground"
-                    }`}>
-                      {u.role === "ADMIN" ? <Shield className="w-3 h-3" /> : <User className="w-3 h-3" />}
-                      {u.role === "ADMIN" ? "Admin" : "Dipendente"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground text-xs">{formatDate(u.createdAt)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 justify-end">
-                      <button
-                        onClick={() => { setEditingUser(u); setModalOpen(true); }}
-                        className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground"
-                        aria-label={`Modifica ${u.name}`}
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(u.id, u.name)}
-                        className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                        aria-label={`Elimina ${u.name}`}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <UserTable
+          users={users}
+          onEdit={(u) => { setEditingUser(u); setModalOpen(true); }}
+          onDelete={handleDelete}
+        />
       </div>
 
       {modalOpen && (
