@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
 
 const { auth } = NextAuth(authConfig);
 
-const PUBLIC_ROUTES = ["/login"];
+const PUBLIC_ROUTES = ["/login", "/forgot-password", "/reset-password"];
 const ADMIN_ONLY_ROUTES = ["/finance", "/employees", "/settings"];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

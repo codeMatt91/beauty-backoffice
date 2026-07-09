@@ -70,7 +70,7 @@ npm run db:seed      # Seed the database (tsx prisma/seed.ts)
 
 ### Route groups
 
-- `app/(auth)/` — unauthenticated routes (`/login`)
+- `app/(auth)/` — unauthenticated routes (`/login`, `/forgot-password`, `/reset-password`)
 - `app/(dashboard)/` — all protected routes; layout enforces auth and renders Sidebar + MobileNav
 - `app/api/cron/` — cron endpoints (not protected by session; use `CRON_SECRET` header instead)
 - `app/api/purge/` — data archiving endpoint (ADMIN only)
@@ -82,6 +82,8 @@ The root dashboard route (`/`) immediately redirects to `/calendar`.
 | Route | Access | Type | Description |
 |---|---|---|---|
 | `/login` | Public | Client | Credentials login form; redirects to `/calendar` if already authenticated |
+| `/forgot-password` | Public | Client | Requests a password-reset email via `requestPasswordReset` in `actions/passwordReset.ts`; always shows a generic confirmation message |
+| `/reset-password` | Public | **Server → Client** | Reads the `token` query param (`ResetPasswordForm.tsx`, wrapped in `Suspense`) and calls `resetPassword` to set a new password |
 | `/calendar` | All | **Server → Client** | Fetches current-month appointments + all employees directly via Prisma (no Server Action), serializes `Decimal`/`Date` with `JSON.parse(JSON.stringify(...))`, then passes to `CalendarClient.tsx`. Month navigation re-fetches via the `getAppointments` Server Action |
 | `/customers` | All | Client | Customer registry — `CustomerTable` + `CustomerForm` modal for create/edit via `actions/customers.ts` |
 | `/employees` | ADMIN | Client | User account management — inline `UserModal` for create/edit/delete via `actions/users.ts` |
@@ -111,12 +113,17 @@ All data mutations are Next.js Server Actions in `actions/`. Each action calls `
 | `Appointment` | Booking linking customer + optional employee |
 | `MonthlyExpense` | Operating expenses by `ExpenseCategory` |
 | `PurgeArchive` | Audit log of data-purge operations |
+| `PasswordResetToken` | Single-use, hashed, expiring tokens for the password-reset flow |
 
 `Appointment.price` is a Prisma `Decimal` — serialized as a string in `AppointmentWithRelations` in `types/index.ts`.
 
 ### WhatsApp reminders
 
 `lib/whatsapp.ts` supports two providers switchable via the `WHATSAPP_PROVIDER` env var (`"twilio"` default, or `"meta"`). The cron job at `app/api/cron/whatsapp-reminder/route.ts` fires daily at 09:00 UTC (configured in `vercel.json`) and sends next-day appointment reminders. It requires `Authorization: Bearer <CRON_SECRET>` on both GET and POST.
+
+### Password reset
+
+`actions/passwordReset.ts` exposes two public Server Actions (no `requireAuth`, since the user isn't signed in): `requestPasswordReset` generates a random token, stores only its SHA-256 hash on `PasswordResetToken` (1 hour expiry, single-use), and emails the raw token as a link via `lib/email.ts` (Resend). It always returns the same generic message regardless of whether the email exists, to avoid user enumeration. `resetPassword` validates the token hash, expiry, and single-use state before updating `User.passwordHash`.
 
 ### Data purge
 
@@ -131,6 +138,11 @@ POSTGRES_URL_NON_POOLING=
 
 # Auth
 AUTH_SECRET=           # or NEXTAUTH_SECRET
+NEXTAUTH_URL=          # base URL, used to build password-reset links
+
+# Email – Resend (password reset)
+RESEND_API_KEY=
+EMAIL_FROM=            # verified sender, e.g. "Beauty Backoffice <noreply@yourdomain.it>"
 
 # WhatsApp – Twilio (default)
 TWILIO_ACCOUNT_SID=

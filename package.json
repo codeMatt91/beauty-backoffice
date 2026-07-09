@@ -40,6 +40,7 @@
     "react-day-picker": "^9.4.4",
     "react-dom": "^19.0.0",
     "recharts": "^2.15.0",
+    "resend": "^4.0.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.3.7",
