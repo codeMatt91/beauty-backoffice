@@ -9,6 +9,11 @@ import { ActionResult, zodErrorToMessage } from "@/lib/actionResult";
 
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 ora
 
+// TEMP: Resend è in modalità sandbox senza dominio verificato, quindi può
+// inviare solo a questo indirizzo. Rimuovere e usare `user.email` una volta
+// verificato un dominio su Resend.
+const TEMP_TEST_RECIPIENT_EMAIL = "emanuela94@yopmail.com";
+
 const requestResetSchema = z.object({
   email: z.string().email("Inserisci un indirizzo email valido."),
 });
@@ -23,12 +28,15 @@ function hashToken(token: string): string {
 }
 
 export async function requestPasswordReset(
-  email: string
+  email: string,
 ): Promise<ActionResult> {
   const parsed = requestResetSchema.safeParse({ email });
-  if (!parsed.success) return { success: false, error: zodErrorToMessage(parsed.error) };
+  if (!parsed.success)
+    return { success: false, error: zodErrorToMessage(parsed.error) };
 
-  const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+  const user = await prisma.user.findUnique({
+    where: { email: parsed.data.email },
+  });
 
   if (user) {
     await prisma.passwordResetToken.deleteMany({
@@ -46,7 +54,11 @@ export async function requestPasswordReset(
 
     const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
     const resetUrl = `${baseUrl}/reset-password?token=${rawToken}`;
-    await sendPasswordResetEmail(user.email, resetUrl);
+    await sendPasswordResetEmail(
+      TEMP_TEST_RECIPIENT_EMAIL,
+      resetUrl,
+      user.email,
+    );
   }
 
   // Messaggio identico indipendentemente dall'esistenza dell'utente, per non rivelare quali email sono registrate.
@@ -55,10 +67,11 @@ export async function requestPasswordReset(
 
 export async function resetPassword(
   token: string,
-  password: string
+  password: string,
 ): Promise<ActionResult> {
   const parsed = resetPasswordSchema.safeParse({ token, password });
-  if (!parsed.success) return { success: false, error: zodErrorToMessage(parsed.error) };
+  if (!parsed.success)
+    return { success: false, error: zodErrorToMessage(parsed.error) };
 
   const tokenHash = hashToken(parsed.data.token);
   const resetToken = await prisma.passwordResetToken.findUnique({
