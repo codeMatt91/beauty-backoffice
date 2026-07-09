@@ -10,7 +10,8 @@ interface SendResult {
 
 export async function sendPasswordResetEmail(
   to: string,
-  resetUrl: string
+  resetUrl: string,
+  accountEmail: string
 ): Promise<SendResult> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
@@ -31,7 +32,7 @@ export async function sendPasswordResetEmail(
       html: `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
           <h2>Reimposta la tua password</h2>
-          <p>Abbiamo ricevuto una richiesta di reset password per il tuo account Beauty Backoffice.</p>
+          <p>Abbiamo ricevuto una richiesta di reset password per l'account <strong>${accountEmail}</strong>.</p>
           <p><a href="${resetUrl}" style="display:inline-block;padding:10px 20px;background:#e11d48;color:#fff;border-radius:8px;text-decoration:none;">Reimposta password</a></p>
           <p>Il link scade tra 1 ora. Se non hai richiesto questo reset, ignora questa email.</p>
         </div>
