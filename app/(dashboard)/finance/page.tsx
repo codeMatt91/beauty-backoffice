@@ -208,6 +208,7 @@ export default function FinancePage() {
   const [exportingMonth, setExportingMonth] = useState(false);
   const [exportingYear, setExportingYear] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [activePreset, setActivePreset] = useState<"month" | "year" | null>(null);
 
   async function loadData() {
     const from = new Date(dateFrom);
@@ -270,21 +271,25 @@ export default function FinancePage() {
 
   // ── Quick date presets ──────────────────────────────────────────────────────
 
-  const presets = [
+  const presets: { label: string; id: "month" | "year"; fn: () => void }[] = [
     {
       label: "Questo mese",
+      id: "month",
       fn: () => {
         setDateFrom(format(startOfMonth(new Date()), "yyyy-MM-dd"));
         setDateTo(format(endOfMonth(new Date()), "yyyy-MM-dd"));
         setGranularity("day");
+        setActivePreset("month");
       },
     },
     {
       label: "Quest'anno",
+      id: "year",
       fn: () => {
         setDateFrom(format(startOfYear(new Date()), "yyyy-MM-dd"));
         setDateTo(format(endOfYear(new Date()), "yyyy-MM-dd"));
         setGranularity("month");
+        setActivePreset("year");
       },
     },
   ];
@@ -307,14 +312,14 @@ export default function FinancePage() {
               <input
                 type="date"
                 value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
+                onChange={(e) => { setDateFrom(e.target.value); setActivePreset(null); }}
                 className="px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <span className="text-muted-foreground text-sm">→</span>
               <input
                 type="date"
                 value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
+                onChange={(e) => { setDateTo(e.target.value); setActivePreset(null); }}
                 className="px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -344,15 +349,21 @@ export default function FinancePage() {
               </button>
             </div>
 
-            {presets.map((p) => (
-              <button
-                key={p.label}
-                onClick={p.fn}
-                className="px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors"
-              >
-                {p.label}
-              </button>
-            ))}
+            <div className="grid grid-cols-2 gap-2 lg:flex lg:gap-3">
+              {presets.map((p) => (
+                <button
+                  key={p.label}
+                  onClick={p.fn}
+                  className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${
+                    activePreset === p.id
+                      ? "bg-primary text-white border-primary"
+                      : "border-border hover:bg-secondary"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
 
             <button
               onClick={async () => {
