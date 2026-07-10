@@ -307,7 +307,7 @@ export default function FinancePage() {
             Filtri
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
             <div className="flex items-center gap-2">
               <input
                 type="date"
@@ -327,23 +327,23 @@ export default function FinancePage() {
             <select
               value={serviceFilter}
               onChange={(e) => setServiceFilter(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full lg:w-auto px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             >
               {SERVICE_FILTERS.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
 
-            <div className="flex items-center rounded-lg border border-border overflow-hidden">
+            <div className="flex items-center rounded-lg border border-border overflow-hidden w-full lg:w-auto">
               <button
                 onClick={() => setGranularity("day")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "day" ? "bg-primary text-white" : "hover:bg-secondary"}`}
+                className={`flex-1 lg:flex-none px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "day" ? "bg-primary text-white" : "hover:bg-secondary"}`}
               >
                 Giornaliero
               </button>
               <button
                 onClick={() => setGranularity("month")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "month" ? "bg-primary text-white" : "hover:bg-secondary"}`}
+                className={`flex-1 lg:flex-none px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "month" ? "bg-primary text-white" : "hover:bg-secondary"}`}
               >
                 Mensile
               </button>
@@ -365,45 +365,47 @@ export default function FinancePage() {
               ))}
             </div>
 
-            <button
-              onClick={async () => {
-                setExportError(null);
-                setExportingMonth(true);
-                try {
-                  const { exportFinancePDF } = await import("@/lib/exportFinancePDF");
-                  await exportFinancePDF("month");
-                } catch (e) {
-                  setExportError(e instanceof Error ? e.message : "Errore durante l'export. Riprova.");
-                } finally {
-                  setExportingMonth(false);
-                }
-              }}
-              disabled={exportingMonth}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
-            >
-              <Download className="w-3.5 h-3.5" />
-              {exportingMonth ? "..." : "Esporta mese"}
-            </button>
+            <div className="grid grid-cols-2 gap-2 border-t border-border pt-1 lg:border-t-0 lg:pt-0 lg:flex lg:gap-3">
+              <button
+                onClick={async () => {
+                  setExportError(null);
+                  setExportingMonth(true);
+                  try {
+                    const { exportFinancePDF } = await import("@/lib/exportFinancePDF");
+                    await exportFinancePDF("month");
+                  } catch (e) {
+                    setExportError(e instanceof Error ? e.message : "Errore durante l'export. Riprova.");
+                  } finally {
+                    setExportingMonth(false);
+                  }
+                }}
+                disabled={exportingMonth}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {exportingMonth ? "..." : "Esporta mese"}
+              </button>
 
-            <button
-              onClick={async () => {
-                setExportError(null);
-                setExportingYear(true);
-                try {
-                  const { exportFinancePDF } = await import("@/lib/exportFinancePDF");
-                  await exportFinancePDF("year");
-                } catch (e) {
-                  setExportError(e instanceof Error ? e.message : "Errore durante l'export. Riprova.");
-                } finally {
-                  setExportingYear(false);
-                }
-              }}
-              disabled={exportingYear}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
-            >
-              <Download className="w-3.5 h-3.5" />
-              {exportingYear ? "..." : "Esporta anno"}
-            </button>
+              <button
+                onClick={async () => {
+                  setExportError(null);
+                  setExportingYear(true);
+                  try {
+                    const { exportFinancePDF } = await import("@/lib/exportFinancePDF");
+                    await exportFinancePDF("year");
+                  } catch (e) {
+                    setExportError(e instanceof Error ? e.message : "Errore durante l'export. Riprova.");
+                  } finally {
+                    setExportingYear(false);
+                  }
+                }}
+                disabled={exportingYear}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {exportingYear ? "..." : "Esporta anno"}
+              </button>
+            </div>
           </div>
 
           {exportError !== null && (
