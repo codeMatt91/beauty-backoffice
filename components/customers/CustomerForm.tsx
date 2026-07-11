@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createCustomer, updateCustomer } from "@/actions/customers";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
@@ -24,11 +24,20 @@ interface Props {
 export default function CustomerForm({ open, onClose, customer, onSaved }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [firstName, setFirstName] = useState(customer?.firstName ?? "");
-  const [lastName, setLastName] = useState(customer?.lastName ?? "");
-  const [phoneNumber, setPhoneNumber] = useState(customer?.phoneNumber ?? "");
-  const [age, setAge] = useState(customer?.age?.toString() ?? "");
-  const [notes, setNotes] = useState(customer?.notes ?? "");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [age, setAge] = useState("");
+  const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+    setFirstName(customer?.firstName ?? "");
+    setLastName(customer?.lastName ?? "");
+    setPhoneNumber(customer?.phoneNumber ?? "");
+    setAge(customer?.age?.toString() ?? "");
+    setNotes(customer?.notes ?? "");
+  }, [open, customer]);
 
   if (!open) return null;
 
