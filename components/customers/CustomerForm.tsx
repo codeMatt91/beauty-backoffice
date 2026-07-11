@@ -32,6 +32,7 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
 
   useEffect(() => {
     if (!open) return;
+    setError(null);
     setFirstName(customer?.firstName ?? "");
     setLastName(customer?.lastName ?? "");
     setPhoneNumber(customer?.phoneNumber ?? "");
