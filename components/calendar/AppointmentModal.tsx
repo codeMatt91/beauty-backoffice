@@ -65,23 +65,39 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [customerId, setCustomerId] = useState(appointment?.customerId ?? "");
-  const [employeeId, setEmployeeId] = useState(appointment?.employeeId ?? "");
-  const [serviceType, setServiceType] = useState(appointment?.serviceType ?? SERVICE_TYPES[0]);
-  const [startTime, setStartTime] = useState(
-    appointment ? format(new Date(appointment.startTime), "yyyy-MM-dd'T'HH:mm") : format(defaultDate ?? new Date(), "yyyy-MM-dd'T'09:00")
-  );
-  const [endTime, setEndTime] = useState(
-    appointment ? format(new Date(appointment.endTime), "yyyy-MM-dd'T'HH:mm") : format(defaultDate ?? new Date(), "yyyy-MM-dd'T'10:00")
-  );
-  const [price, setPrice] = useState(appointment?.price ?? "0");
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(appointment?.paymentStatus ?? "PENDING");
-  const [notes, setNotes] = useState(appointment?.notes ?? "");
+  const [customerId, setCustomerId] = useState("");
+  const [employeeId, setEmployeeId] = useState("");
+  const [serviceType, setServiceType] = useState(SERVICE_TYPES[0]);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [price, setPrice] = useState("0");
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("PENDING");
+  const [notes, setNotes] = useState("");
 
   useEffect(() => {
     if (!open) return;
     getCustomers().then(setCustomers);
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    setCustomerId(appointment?.customerId ?? "");
+    setEmployeeId(appointment?.employeeId ?? "");
+    setServiceType(appointment?.serviceType ?? SERVICE_TYPES[0]);
+    setStartTime(
+      appointment
+        ? format(new Date(appointment.startTime), "yyyy-MM-dd'T'HH:mm")
+        : format(defaultDate ?? new Date(), "yyyy-MM-dd'T'09:00")
+    );
+    setEndTime(
+      appointment
+        ? format(new Date(appointment.endTime), "yyyy-MM-dd'T'HH:mm")
+        : format(defaultDate ?? new Date(), "yyyy-MM-dd'T'10:00")
+    );
+    setPrice(appointment?.price ?? "0");
+    setPaymentStatus(appointment?.paymentStatus ?? "PENDING");
+    setNotes(appointment?.notes ?? "");
+  }, [open, appointment]);
 
   if (!open) return null;
 
