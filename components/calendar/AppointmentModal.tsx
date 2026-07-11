@@ -97,7 +97,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
     setPrice(appointment?.price ?? "0");
     setPaymentStatus(appointment?.paymentStatus ?? "PENDING");
     setNotes(appointment?.notes ?? "");
-  }, [open, appointment]);
+  }, [open, appointment, defaultDate]);
 
   if (!open) return null;
 
