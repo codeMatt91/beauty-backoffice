@@ -285,43 +285,47 @@ export default function CalendarView({
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-card">
-        <button
-          onClick={onGoToToday}
-          className="px-3 py-1.5 text-sm font-medium rounded-lg border border-border hover:bg-secondary transition-colors"
-        >
-          Oggi
-        </button>
+      <div className="flex flex-col gap-2 px-4 py-3 border-b border-border bg-card lg:flex-row lg:items-center">
+        {/* Riga 1 (mobile) / gruppo sinistro (desktop): Oggi + navigazione data */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onGoToToday}
+            className="shrink-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-border hover:bg-secondary transition-colors"
+          >
+            Oggi
+          </button>
 
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => onNavigate(-1)}
-            className="p-1.5 rounded-lg hover:bg-secondary"
-            aria-label="Periodo precedente"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className={cn(
-            "text-sm font-semibold text-foreground min-w-[160px] text-center capitalize transition-opacity",
-            isPending && "opacity-50"
-          )}>
-            {view === "month"
-              ? format(currentDate, "MMMM yyyy", { locale: it })
-              : view === "week"
-              ? `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM", { locale: it })} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM yyyy", { locale: it })}`
-              : format(currentDate, "EEEE d MMMM yyyy", { locale: it })
-            }
-          </span>
-          <button
-            onClick={() => onNavigate(1)}
-            className="p-1.5 rounded-lg hover:bg-secondary"
-            aria-label="Periodo successivo"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1 flex-1 justify-center lg:flex-none lg:justify-start">
+            <button
+              onClick={() => onNavigate(-1)}
+              className="p-1.5 rounded-lg hover:bg-secondary"
+              aria-label="Periodo precedente"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className={cn(
+              "text-sm font-semibold text-foreground min-w-[160px] text-center capitalize transition-opacity",
+              isPending && "opacity-50"
+            )}>
+              {view === "month"
+                ? format(currentDate, "MMMM yyyy", { locale: it })
+                : view === "week"
+                ? `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM", { locale: it })} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM yyyy", { locale: it })}`
+                : format(currentDate, "EEEE d MMMM yyyy", { locale: it })
+              }
+            </span>
+            <button
+              onClick={() => onNavigate(1)}
+              className="p-1.5 rounded-lg hover:bg-secondary"
+              aria-label="Periodo successivo"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
+        {/* Riga 2 (mobile) / gruppo destro (desktop): vista + nuovo appuntamento */}
+        <div className="flex items-center justify-between gap-2 lg:ml-auto lg:justify-end">
           <div className="flex items-center rounded-lg border border-border overflow-hidden">
             <button
               onClick={() => onViewChange("month")}
@@ -354,7 +358,7 @@ export default function CalendarView({
 
           <button
             onClick={() => openNew(new Date())}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Appuntamento</span>
