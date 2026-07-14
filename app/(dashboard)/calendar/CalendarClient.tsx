@@ -5,14 +5,16 @@ import { useRouter } from "next/navigation";
 import {
   startOfMonth, endOfMonth,
   startOfWeek, endOfWeek,
+  startOfDay, endOfDay,
   addMonths, subMonths,
   addWeeks, subWeeks,
+  addDays, subDays,
 } from "date-fns";
 import CalendarView from "@/components/calendar/CalendarView";
 import { getAppointments } from "@/actions/appointments";
 import { PaymentStatus } from "@prisma/client";
 
-type ViewMode = "month" | "week";
+type ViewMode = "month" | "week" | "day";
 
 interface Appointment {
   id: string;
@@ -41,8 +43,8 @@ export default function CalendarClient({ initialAppointments, employees }: Props
   const [isPending, startTransition] = useTransition();
 
   async function fetchAppointments(date: Date, v: ViewMode) {
-    const from = v === "month" ? startOfMonth(date) : startOfWeek(date, { weekStartsOn: 1 });
-    const to = v === "month" ? endOfMonth(date) : endOfWeek(date, { weekStartsOn: 1 });
+    const from = v === "month" ? startOfMonth(date) : v === "week" ? startOfWeek(date, { weekStartsOn: 1 }) : startOfDay(date);
+    const to = v === "month" ? endOfMonth(date) : v === "week" ? endOfWeek(date, { weekStartsOn: 1 }) : endOfDay(date);
     const data = await getAppointments(from, to);
     setAppointments(JSON.parse(JSON.stringify(data)) as Appointment[]);
   }
@@ -50,7 +52,9 @@ export default function CalendarClient({ initialAppointments, employees }: Props
   function handleNavigate(dir: 1 | -1) {
     const newDate = view === "month"
       ? (dir === 1 ? addMonths(currentDate, 1) : subMonths(currentDate, 1))
-      : (dir === 1 ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1));
+      : view === "week"
+      ? (dir === 1 ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1))
+      : (dir === 1 ? addDays(currentDate, 1) : subDays(currentDate, 1));
     setCurrentDate(newDate);
     startTransition(() => { fetchAppointments(newDate, view); });
   }

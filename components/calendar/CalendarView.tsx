@@ -13,7 +13,7 @@ import {
   isToday,
 } from "date-fns";
 import { it } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, CalendarDays, Grid3x3 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, CalendarDays, Grid3x3, Calendar } from "lucide-react";
 import { cn, formatTime, formatCurrency } from "@/lib/utils";
 import AppointmentModal from "./AppointmentModal";
 import { useState } from "react";
@@ -38,7 +38,7 @@ interface Employee {
   name: string;
 }
 
-type ViewMode = "month" | "week";
+type ViewMode = "month" | "week" | "day";
 
 interface Props {
   appointments: Appointment[];
@@ -238,6 +238,50 @@ export default function CalendarView({
     );
   }
 
+  // ─── Day View ───────────────────────────────────────────────────────────────
+
+  function renderDayView() {
+    const hours = Array.from({ length: 13 }, (_, i) => i + 8);
+    const dayApts = getAppointmentsForDay(currentDate);
+
+    return (
+      <div className="flex-1 overflow-auto">
+        {hours.map((hour) => {
+          const slotApts = dayApts.filter((a) => new Date(a.startTime).getHours() === hour);
+          return (
+            <div key={hour} className="grid grid-cols-[60px_1fr] border-b border-border min-h-[60px]">
+              <div className="px-2 py-1 text-[10px] text-muted-foreground text-right border-r border-border">
+                {hour}:00
+              </div>
+              <div
+                onClick={() => {
+                  const date = new Date(currentDate);
+                  date.setHours(hour, 0, 0, 0);
+                  openNew(date);
+                }}
+                className="p-1 hover:bg-secondary/30 cursor-pointer transition-colors"
+              >
+                {slotApts.map((a) => (
+                  <div
+                    key={a.id}
+                    onClick={(e) => { e.stopPropagation(); openEdit(a); }}
+                    className={cn(
+                      "appointment-block border mb-0.5",
+                      STATUS_COLORS[a.paymentStatus]
+                    )}
+                  >
+                    {formatTime(a.startTime)} {a.customer.lastName} – {a.serviceType}
+                    {a.employee && ` (${a.employee.name})`} · {formatCurrency(a.price)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
@@ -263,7 +307,9 @@ export default function CalendarView({
           )}>
             {view === "month"
               ? format(currentDate, "MMMM yyyy", { locale: it })
-              : `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM", { locale: it })} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM yyyy", { locale: it })}`
+              : view === "week"
+              ? `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM", { locale: it })} – ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "d MMM yyyy", { locale: it })}`
+              : format(currentDate, "EEEE d MMMM yyyy", { locale: it })
             }
           </span>
           <button
@@ -295,6 +341,15 @@ export default function CalendarView({
               <CalendarDays className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Settimana</span>
             </button>
+            <button
+              onClick={() => onViewChange("day")}
+              className={cn("px-3 py-1.5 text-sm font-medium flex items-center gap-1.5 transition-colors",
+                view === "day" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
+              )}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Giorno</span>
+            </button>
           </div>
 
           <button
@@ -316,7 +371,7 @@ export default function CalendarView({
         ))}
       </div>
 
-      {view === "month" ? renderMonthView() : renderWeekView()}
+      {view === "month" ? renderMonthView() : view === "week" ? renderWeekView() : renderDayView()}
 
       <AppointmentModal
         open={modalOpen}
