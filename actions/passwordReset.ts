@@ -54,11 +54,7 @@ export async function requestPasswordReset(
 
     const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
     const resetUrl = `${baseUrl}/reset-password?token=${rawToken}`;
-    await sendPasswordResetEmail(
-      TEMP_TEST_RECIPIENT_EMAIL,
-      resetUrl,
-      user.email,
-    );
+    await sendPasswordResetEmail(user.email, resetUrl, user.email);
   }
 
   // Messaggio identico indipendentemente dall'esistenza dell'utente, per non rivelare quali email sono registrate.
