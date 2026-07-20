@@ -3,13 +3,13 @@
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function getMyProfile(): Promise<{ image: string | null; createdAt: Date }> {
+export async function getMyProfile(): Promise<{ image: string | null; createdAt: string }> {
   const user = await requireAuth();
   const dbUser = await prisma.user.findUniqueOrThrow({
     where: { id: user.id },
     select: { image: true, createdAt: true },
   });
-  return dbUser;
+  return { image: dbUser.image, createdAt: dbUser.createdAt.toISOString() };
 }
 
 export async function updateProfileImage(dataUrl: string): Promise<{ success: boolean }> {

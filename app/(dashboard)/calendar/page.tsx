@@ -31,7 +31,7 @@ export default async function CalendarPage() {
     <div className="flex flex-col h-full">
       <CalendarClient
         initialAppointments={JSON.parse(JSON.stringify(serializedAppointments))}
-        employees={employees}
+        employees={JSON.parse(JSON.stringify(employees))}
       />
     </div>
   );

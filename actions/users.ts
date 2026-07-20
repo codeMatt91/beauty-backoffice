@@ -76,6 +76,14 @@ export async function updateUser(id: string, data: z.infer<typeof updateUserSche
   const parsed = updateUserSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: zodErrorToMessage(parsed.error) };
 
+  if (parsed.data.role === 'EMPLOYEE') {
+    const targetUser = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+    if (targetUser?.role === 'ADMIN') {
+      const adminCount = await prisma.user.count({ where: { role: 'ADMIN' } });
+      if (adminCount <= 1) return { success: false, error: "Non puoi rimuovere l'ultimo account Admin." };
+    }
+  }
+
   const updateData: Record<string, unknown> = { ...parsed.data };
   if (parsed.data.password) {
     updateData.passwordHash = await bcrypt.hash(parsed.data.password, 12);
