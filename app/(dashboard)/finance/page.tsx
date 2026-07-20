@@ -5,7 +5,6 @@ import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInte
 import { it } from "date-fns/locale";
 import { getFinancialSummary, getExpenses, createExpense, deleteExpense } from "@/actions/expenses";
 import FinancialChart from "@/components/finance/FinancialChart";
-import Header from "@/components/layout/Header";
 import { formatCurrency } from "@/lib/utils";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
@@ -296,8 +295,6 @@ export default function FinancePage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Dashboard Finanziaria" userName="" />
-
       <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-5">
 
         {/* ── Filters bar ── */}

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { getCustomers } from "@/actions/customers";
 import CustomerTable from "@/components/customers/CustomerTable";
 import CustomerForm from "@/components/customers/CustomerForm";
-import Header from "@/components/layout/Header";
 import { Plus, Users } from "lucide-react";
 
 export default function CustomersPage() {
@@ -31,8 +30,6 @@ export default function CustomersPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Clienti" userName="" />
-
       <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-4">
         {/* Page header */}
         <div className="flex items-center justify-between">

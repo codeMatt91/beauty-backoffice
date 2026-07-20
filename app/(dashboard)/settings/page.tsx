@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Header from "@/components/layout/Header";
 import { Archive, Download, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 
 export default function SettingsPage() {
@@ -61,8 +60,6 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Impostazioni" userName="" />
-
       <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-6 max-w-2xl">
 
         {/* ── Data Purge ── */}

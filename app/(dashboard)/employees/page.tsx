@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { getAllUsers, deleteUser } from "@/actions/users";
-import Header from "@/components/layout/Header";
 import { Plus, UserCog } from "lucide-react";
 import UserTable, { UserRecord } from "@/components/employees/UserTable";
 import UserModal from "@/components/employees/UserModal";
@@ -37,7 +36,6 @@ export default function EmployeesPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Header title="Gestione Dipendenti" userName="" />
       <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-4">
         {deleteError && (
           <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
