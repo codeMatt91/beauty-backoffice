@@ -27,12 +27,13 @@ export default function UserProfilePanel({ firstName, lastName, email, role, onC
       setImage(image);
       setCreatedAt(new Date(createdAt));
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
 
     if (file.size > 10 * 1024 * 1024) {
       setUploadError("L'immagine supera il limite di 10 MB.");
@@ -55,6 +56,7 @@ export default function UserProfilePanel({ firstName, lastName, email, role, onC
         setUploading(false);
       }
     };
+    reader.onerror = () => { setUploadError("Errore durante la lettura del file."); setUploading(false); };
     reader.readAsDataURL(file);
   }
 
