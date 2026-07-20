@@ -14,6 +14,10 @@ export const authConfig = {
         token.id = user.id;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         token.role = (user as any).role;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.firstName = (user as any).firstName;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.lastName = (user as any).lastName;
       }
       return token;
     },
@@ -22,6 +26,10 @@ export const authConfig = {
         session.user.id = token.id as string;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (session.user as any).role = token.role;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session.user as any).firstName = token.firstName;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session.user as any).lastName = token.lastName;
       }
       return session;
     },

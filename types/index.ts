@@ -4,7 +4,8 @@ export type { Role, PaymentStatus, ExpenseCategory };
 
 export interface SessionUser {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: Role;
 }
@@ -28,7 +29,8 @@ export interface AppointmentWithRelations {
   };
   employee: {
     id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
   } | null;
 }
 
