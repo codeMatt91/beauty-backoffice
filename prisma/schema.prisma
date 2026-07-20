@@ -38,13 +38,15 @@ enum ExpenseCategory {
 
 model User {
   id           String   @id @default(cuid())
-  name         String
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
   email        String   @unique
   passwordHash String   @map("password_hash")
   role         Role     @default(EMPLOYEE)
+  image        String?
   createdAt    DateTime @default(now()) @map("created_at")
 
-  appointments Appointment[] @relation("EmployeeAppointments")
+  appointments        Appointment[]       @relation("EmployeeAppointments")
   passwordResetTokens PasswordResetToken[]
 
   @@map("users")
