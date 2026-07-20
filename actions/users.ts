@@ -9,7 +9,8 @@ import { Role } from "@prisma/client";
 import { ActionResult, zodErrorToMessage } from "@/lib/actionResult";
 
 const createUserSchema = z.object({
-  name: z.string().min(2, "Il nome è obbligatorio (min. 2 caratteri).").max(80, "Il nome è troppo lungo."),
+  firstName: z.string().min(1, "Il nome è obbligatorio.").max(80),
+  lastName: z.string().min(1, "Il cognome è obbligatorio.").max(80),
   email: z.string().email("Inserisci un indirizzo email valido."),
   password: z.string().min(8, "La password deve contenere almeno 8 caratteri."),
   role: z.nativeEnum(Role).default("EMPLOYEE"),
@@ -19,20 +20,29 @@ const updateUserSchema = createUserSchema.partial().omit({ password: true }).ext
   password: z.string().min(8, "La password deve contenere almeno 8 caratteri.").optional(),
 });
 
+const USER_SELECT = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  role: true,
+  createdAt: true,
+} as const;
+
 export async function getEmployees() {
   await requireAdmin();
   return prisma.user.findMany({
     where: { role: "EMPLOYEE" },
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
-    orderBy: { name: "asc" },
+    select: USER_SELECT,
+    orderBy: { firstName: "asc" },
   });
 }
 
 export async function getAllUsers() {
   await requireAdmin();
   return prisma.user.findMany({
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
-    orderBy: { name: "asc" },
+    select: USER_SELECT,
+    orderBy: { firstName: "asc" },
   });
 }
 
@@ -48,12 +58,13 @@ export async function createUser(data: z.infer<typeof createUserSchema>): Promis
 
   await prisma.user.create({
     data: {
-      name: parsed.data.name,
+      firstName: parsed.data.firstName,
+      lastName: parsed.data.lastName,
       email: parsed.data.email,
       passwordHash,
       role: parsed.data.role,
     },
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
+    select: USER_SELECT,
   });
 
   revalidatePath("/employees");
@@ -74,7 +85,7 @@ export async function updateUser(id: string, data: z.infer<typeof updateUserSche
   await prisma.user.update({
     where: { id },
     data: updateData,
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
+    select: USER_SELECT,
   });
 
   revalidatePath("/employees");

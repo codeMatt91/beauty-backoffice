@@ -6,7 +6,8 @@ import { formatDate } from "@/lib/utils";
 
 export interface UserRecord {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: Role;
   createdAt: Date;
@@ -36,7 +37,7 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
           <tbody className="divide-y divide-border">
             {users.map((u) => (
               <tr key={u.id} className="hover:bg-secondary/30">
-                <td className="px-4 py-3 font-medium">{u.name}</td>
+                <td className="px-4 py-3 font-medium">{u.firstName} {u.lastName}</td>
                 <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -54,14 +55,14 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
                     <button
                       onClick={() => onEdit(u)}
                       className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground"
-                      aria-label={`Modifica ${u.name}`}
+                      aria-label={`Modifica ${u.firstName} ${u.lastName}`}
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
-                      onClick={() => onDelete(u.id, u.name)}
+                      onClick={() => onDelete(u.id, `${u.firstName} ${u.lastName}`)}
                       className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                      aria-label={`Elimina ${u.name}`}
+                      aria-label={`Elimina ${u.firstName} ${u.lastName}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -79,21 +80,21 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
           <div key={u.id} className="bg-card rounded-xl border border-border p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-medium text-foreground truncate">{u.name}</p>
+                <p className="font-medium text-foreground truncate">{u.firstName} {u.lastName}</p>
                 <p className="text-sm text-muted-foreground truncate">{u.email}</p>
               </div>
               <div className="flex gap-1 shrink-0">
                 <button
                   onClick={() => onEdit(u)}
                   className="p-2 rounded-lg hover:bg-secondary"
-                  aria-label={`Modifica ${u.name}`}
+                  aria-label={`Modifica ${u.firstName} ${u.lastName}`}
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => onDelete(u.id, u.name)}
+                  onClick={() => onDelete(u.id, `${u.firstName} ${u.lastName}`)}
                   className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"
-                  aria-label={`Elimina ${u.name}`}
+                  aria-label={`Elimina ${u.firstName} ${u.lastName}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

@@ -17,7 +17,8 @@ async function main() {
     where: { email: "admin@beauty.it" },
     update: {},
     create: {
-      name: "Admin Centro",
+      firstName: "Admin",
+      lastName: "Centro",
       email: "admin@beauty.it",
       passwordHash: adminHash,
       role: "ADMIN",
@@ -31,7 +32,8 @@ async function main() {
     where: { email: "sara@beauty.it" },
     update: {},
     create: {
-      name: "Sara Rossi",
+      firstName: "Sara",
+      lastName: "Rossi",
       email: "sara@beauty.it",
       passwordHash: empHash,
       role: "EMPLOYEE",

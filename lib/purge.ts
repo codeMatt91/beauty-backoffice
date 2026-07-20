@@ -43,7 +43,7 @@ export async function runPurge(olderThanMonths: number): Promise<PurgeResult> {
           notes: true,
         },
       },
-      employee: { select: { id: true, name: true, email: true } },
+      employee: { select: { id: true, firstName: true, lastName: true, email: true } },
     },
     orderBy: { startTime: "asc" },
   });
