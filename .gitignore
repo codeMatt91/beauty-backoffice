@@ -16,7 +16,7 @@ build/
 .env.production.local
 
 # Prisma
-prisma/migrations/
+# Note: prisma/migrations/ is now tracked (migration workflow adopted)
 
 # Debug
 npm-debug.log*

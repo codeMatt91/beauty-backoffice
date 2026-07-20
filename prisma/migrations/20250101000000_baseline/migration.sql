@@ -1,0 +1,3 @@
+-- Baseline migration: this represents the existing database schema
+-- created before migrations were introduced.
+-- This migration is intentionally empty because the schema already exists in the DB.
