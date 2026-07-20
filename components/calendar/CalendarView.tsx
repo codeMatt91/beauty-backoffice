@@ -30,12 +30,13 @@ interface Appointment {
   paymentStatus: PaymentStatus;
   notes: string | null;
   customer: { id: string; firstName: string; lastName: string; phoneNumber: string | null };
-  employee: { id: string; name: string } | null;
+  employee: { id: string; firstName: string; lastName: string } | null;
 }
 
 interface Employee {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
 }
 
 type ViewMode = "month" | "week" | "day";
@@ -271,7 +272,7 @@ export default function CalendarView({
                     )}
                   >
                     {formatTime(a.startTime)} {a.customer.lastName} – {a.serviceType}
-                    {a.employee && ` (${a.employee.name})`} · {formatCurrency(a.price)}
+                    {a.employee && ` (${a.employee.firstName} ${a.employee.lastName})`} · {formatCurrency(a.price)}
                   </div>
                 ))}
               </div>

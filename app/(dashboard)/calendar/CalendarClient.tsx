@@ -27,12 +27,12 @@ interface Appointment {
   paymentStatus: PaymentStatus;
   notes: string | null;
   customer: { id: string; firstName: string; lastName: string; phoneNumber: string | null };
-  employee: { id: string; name: string } | null;
+  employee: { id: string; firstName: string; lastName: string } | null;
 }
 
 interface Props {
   initialAppointments: Appointment[];
-  employees: { id: string; name: string }[];
+  employees: { id: string; firstName: string; lastName: string }[];
 }
 
 export default function CalendarClient({ initialAppointments, employees }: Props) {

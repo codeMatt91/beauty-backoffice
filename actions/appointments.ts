@@ -36,7 +36,7 @@ export async function getAppointments(from: Date, to: Date) {
     where: { startTime: { gte: from, lte: to } },
     include: {
       customer: { select: { id: true, firstName: true, lastName: true, phoneNumber: true } },
-      employee: { select: { id: true, name: true } },
+      employee: { select: { id: true, firstName: true, lastName: true } },
     },
     orderBy: { startTime: "asc" },
   });

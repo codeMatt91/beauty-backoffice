@@ -17,7 +17,8 @@ interface Customer {
 
 interface Employee {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
 }
 
 interface Appointment {
@@ -192,7 +193,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
               >
                 <option value="">Nessuna assegnazione</option>
                 {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>{emp.name}</option>
+                  <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
                 ))}
               </select>
             </div>
