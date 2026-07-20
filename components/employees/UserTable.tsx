@@ -16,7 +16,7 @@ export interface UserRecord {
 interface Props {
   users: UserRecord[];
   onEdit: (user: UserRecord) => void;
-  onDelete: (id: string, name: string) => void;
+  onDelete: (id: string, fullName: string) => void;
 }
 
 export default function UserTable({ users, onEdit, onDelete }: Props) {
