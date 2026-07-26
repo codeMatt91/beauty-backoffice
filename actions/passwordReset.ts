@@ -4,15 +4,10 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { sendPasswordResetEmail } from "@/lib/mailer";
 import { ActionResult, zodErrorToMessage } from "@/lib/actionResult";
 
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 ora
-
-// TEMP: Resend è in modalità sandbox senza dominio verificato, quindi può
-// inviare solo a questo indirizzo. Rimuovere e usare `user.email` una volta
-// verificato un dominio su Resend.
-const TEMP_TEST_RECIPIENT_EMAIL = "emanuela94@yopmail.com";
 
 const requestResetSchema = z.object({
   email: z.string().email("Inserisci un indirizzo email valido."),

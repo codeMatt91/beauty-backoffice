@@ -119,7 +119,7 @@ All data mutations are Next.js Server Actions in `actions/`. Each action calls `
 
 ### Password reset
 
-`actions/passwordReset.ts` exposes two public Server Actions (no `requireAuth`, since the user isn't signed in): `requestPasswordReset` generates a random token, stores only its SHA-256 hash on `PasswordResetToken` (1 hour expiry, single-use), and emails the raw token as a link via `lib/email.ts` (Resend). It always returns the same generic message regardless of whether the email exists, to avoid user enumeration. `resetPassword` validates the token hash, expiry, and single-use state before updating `User.passwordHash`.
+`actions/passwordReset.ts` exposes two public Server Actions (no `requireAuth`, since the user isn't signed in): `requestPasswordReset` generates a random token, stores only its SHA-256 hash on `PasswordResetToken` (1 hour expiry, single-use), and emails the raw token as a link via `lib/mailer.ts` (SMTP). It always returns the same generic message regardless of whether the email exists, to avoid user enumeration. `resetPassword` validates the token hash, expiry, and single-use state before updating `User.passwordHash`.
 
 ### Email appointment reminders
 
