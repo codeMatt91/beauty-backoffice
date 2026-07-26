@@ -9,15 +9,18 @@ interface SendResult {
   error?: string;
 }
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT),
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_API_KEY,
-  },
-});
+function createTransporter() {
+  const port = Number(process.env.EMAIL_PORT);
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: port,
+    secure: port === 465, // implicit TLS on 465, STARTTLS on 587+
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_API_KEY,
+    },
+  });
+}
 
 async function sendEmail({
   to,
@@ -30,12 +33,20 @@ async function sendEmail({
 }): Promise<SendResult> {
   const from = process.env.EMAIL_FROM;
 
-  if (!process.env.EMAIL_HOST || !process.env.EMAIL_API_KEY || !from) {
+  // Validate all required env vars
+  if (
+    !process.env.EMAIL_HOST ||
+    !process.env.EMAIL_PORT ||
+    !process.env.EMAIL_USER ||
+    !process.env.EMAIL_API_KEY ||
+    !from
+  ) {
     console.error("[Mailer] Variabili SMTP non configurate");
     return { success: false, error: "Provider email non configurato" };
   }
 
   try {
+    const transporter = createTransporter();
     await transporter.sendMail({ from, to, subject, html });
     return { success: true };
   } catch (err: any) {
