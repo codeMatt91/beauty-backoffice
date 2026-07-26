@@ -81,6 +81,14 @@ model Customer {
   @@map("customers")
 }
 
+model ServiceType {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("service_types")
+}
+
 model Appointment {
   id            String        @id @default(cuid())
   customerId    String        @map("customer_id")
