@@ -1,6 +1,7 @@
 /**
  * Cron Job – Reminder Email per appuntamenti del giorno successivo
- * Schedulato in vercel.json: "0 9 * * *" (ogni giorno alle 09:00 UTC)
+ * Schedulato in vercel.json: "0 5 * * *" (ogni giorno alle 05:00 UTC,
+ * ovvero 07:00 ora italiana in CEST; 06:00 in CET durante l'ora solare)
  *
  * Sicurezza: richiede header Authorization: Bearer CRON_SECRET
  */
