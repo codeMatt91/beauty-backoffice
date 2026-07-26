@@ -142,18 +142,18 @@ export default function CustomerTable({
                 <td className="px-4 py-3 text-muted-foreground">
                   {c.email}
                 </td>
-                <td className="px-4 py-3 text-muted-foreground">
+                {/* <td className="px-4 py-3 text-muted-foreground">
                   {c.age ?? "—"}
-                </td>
+                </td> */}
                 <td className="px-4 py-3">
                   <span className="inline-flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary rounded-full px-2 py-0.5">
                     <Calendar className="w-3 h-3" />
                     {c._count.appointments}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-muted-foreground text-xs">
+                {/* <td className="px-4 py-3 text-muted-foreground text-xs">
                   {formatDate(c.createdAt)}
-                </td>
+                </td> */}
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1 justify-end">
                     <button
