@@ -6,6 +6,10 @@ import type { NextRequest } from "next/server";
 const { auth } = NextAuth(authConfig);
 
 const PUBLIC_ROUTES = ["/login", "/forgot-password", "/reset-password"];
+// Routes a logged-in user should be bounced away from (e.g. a login form).
+// /reset-password is deliberately excluded: a valid reset link must work
+// even for a user who still has an active session elsewhere.
+const REDIRECT_IF_AUTHENTICATED_ROUTES = ["/login", "/forgot-password"];
 const ADMIN_ONLY_ROUTES = ["/finance", "/employees", "/settings"];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,7 +19,7 @@ export default auth((req: NextRequest & { auth: any }) => {
 
   // Rotta pubblica – lascia passare
   if (PUBLIC_ROUTES.some((r) => pathname.startsWith(r))) {
-    if (session) {
+    if (session && REDIRECT_IF_AUTHENTICATED_ROUTES.some((r) => pathname.startsWith(r))) {
       return NextResponse.redirect(new URL("/calendar", req.url));
     }
     return NextResponse.next();

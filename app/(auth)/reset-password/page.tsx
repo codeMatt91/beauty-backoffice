@@ -1,6 +1,11 @@
 import { Suspense } from "react";
 import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
 
+// The form's content depends entirely on the per-visit `token` query param;
+// static prerendering would bake in a single cached response (no token)
+// served to every visitor regardless of their actual link.
+export const dynamic = "force-dynamic";
+
 export default function ResetPasswordPage() {
   return (
     <div className="w-full max-w-md">
