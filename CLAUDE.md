@@ -40,7 +40,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Postgres: 256 MB storage, 60 compute hours/month, 100 000 rows max per query result
 - Serverless functions: 100 GB-hours/month, 10 s execution timeout on Hobby plan
-- Cron jobs: 2 max on Hobby plan
+- Cron jobs: 2 max on Hobby plan (currently using 1 for email reminders)
 
 ### Next.js / React
 
@@ -72,6 +72,7 @@ npm run db:seed      # Seed the database (tsx prisma/seed.ts)
 
 - `app/(auth)/` — unauthenticated routes (`/login`, `/forgot-password`, `/reset-password`)
 - `app/(dashboard)/` — all protected routes; layout enforces auth and renders Sidebar + MobileNav
+- `app/api/cron/` — cron endpoints (not protected by session; use `CRON_SECRET` header instead)
 - `app/api/purge/` — data archiving endpoint (ADMIN only)
 
 The root dashboard route (`/`) immediately redirects to `/calendar`.
@@ -120,6 +121,10 @@ All data mutations are Next.js Server Actions in `actions/`. Each action calls `
 
 `actions/passwordReset.ts` exposes two public Server Actions (no `requireAuth`, since the user isn't signed in): `requestPasswordReset` generates a random token, stores only its SHA-256 hash on `PasswordResetToken` (1 hour expiry, single-use), and emails the raw token as a link via `lib/email.ts` (Resend). It always returns the same generic message regardless of whether the email exists, to avoid user enumeration. `resetPassword` validates the token hash, expiry, and single-use state before updating `User.passwordHash`.
 
+### Email appointment reminders
+
+`lib/mailer.ts` sends transactional email via Nodemailer over SMTP (configured through `EMAIL_HOST`/`EMAIL_PORT`/`EMAIL_USER`/`EMAIL_API_KEY`/`EMAIL_FROM`), separate from the Resend integration used for password reset. The cron job at `app/api/cron/email-reminder/route.ts` fires daily at 09:00 UTC (configured in `vercel.json`) and emails next-day appointment reminders to customers with an email on file; customers without one are skipped. It requires `Authorization: Bearer <CRON_SECRET>` on both GET and POST.
+
 ### Data purge
 
 `lib/purge.ts` exports appointments older than N months to a ZIP-compressed JSON archive, records the operation in `PurgeArchive`, then deletes the source rows. The `app/api/purge/route.ts` endpoint triggers this; only ADMINs can call it.
@@ -138,6 +143,15 @@ NEXTAUTH_URL=          # base URL, used to build password-reset links
 # Email – Resend (password reset)
 RESEND_API_KEY=
 EMAIL_FROM=            # verified sender, e.g. "Beauty Backoffice <noreply@yourdomain.it>"
+
+# Email – SMTP (appointment reminders)
+EMAIL_HOST=            # e.g. smtp.resend.com
+EMAIL_PORT=            # e.g. 465
+EMAIL_USER=            # SMTP username
+EMAIL_API_KEY=         # SMTP password/API key
+
+# Cron
+CRON_SECRET=           # shared secret for Authorization: Bearer header on cron routes
 ```
 
 ## Agent usage rules
