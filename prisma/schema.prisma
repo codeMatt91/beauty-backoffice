@@ -71,6 +71,7 @@ model Customer {
   firstName   String   @map("first_name")
   lastName    String   @map("last_name")
   phoneNumber String?  @map("phone_number")
+  email       String?  @map("email")
   age         Int?
   notes       String?
   createdAt   DateTime @default(now()) @map("created_at")
