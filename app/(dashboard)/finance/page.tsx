@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from "react";
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval, eachMonthOfInterval } from "date-fns";
 import { it } from "date-fns/locale";
 import { getFinancialSummary, getExpenses, createExpense, deleteExpense } from "@/actions/expenses";
+import { getServiceTypes } from "@/actions/serviceTypes";
 import FinancialChart from "@/components/finance/FinancialChart";
 import { formatCurrency } from "@/lib/utils";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -35,20 +36,6 @@ interface ExpenseRecord {
 }
 
 type Granularity = "day" | "month";
-
-const SERVICE_FILTERS = [
-  "Tutti",
-  "Pulizia viso",
-  "Massaggio rilassante",
-  "Trattamento corpo",
-  "Manicure",
-  "Pedicure",
-  "Ceretta",
-  "Laser",
-  "Radiofrequenza",
-  "Pressoterapia",
-  "Altro",
-];
 
 const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   "AFFITTO", "UTENZE", "MATERIALI", "PERSONALE", "MARKETING", "MANUTENZIONE", "ALTRO",
@@ -196,6 +183,7 @@ function AddExpenseModal({ onClose, onSaved }: { onClose: () => void; onSaved: (
 export default function FinancePage() {
   const [data, setData] = useState<FinancialData>({ appointments: [], expenses: [] });
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
+  const [serviceTypes, setServiceTypes] = useState<{ id: string; name: string }[]>([]);
   const [loading, startTransition] = useTransition();
 
   // Filters
@@ -224,6 +212,10 @@ export default function FinancePage() {
   useEffect(() => {
     startTransition(() => { loadData(); });
   }, [dateFrom, dateTo]);
+
+  useEffect(() => {
+    getServiceTypes().then(setServiceTypes);
+  }, []);
 
   // ── Compute chart data ──────────────────────────────────────────────────────
 
@@ -326,7 +318,7 @@ export default function FinancePage() {
               onChange={(e) => setServiceFilter(e.target.value)}
               className="w-full lg:w-auto px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              {SERVICE_FILTERS.map((s) => (
+              {["Tutti", ...serviceTypes.map((s) => s.name)].map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
