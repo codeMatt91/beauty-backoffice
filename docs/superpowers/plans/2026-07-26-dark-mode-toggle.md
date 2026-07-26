@@ -573,6 +573,178 @@ EOF
 
 ---
 
+### Task 3: Dark mode fixes for the `(auth)` route group
+
+**Why this task exists:** discovered during Task 1's implementation, not in the original design spec. The spec's file-usage grep (done during brainstorming) searched for hardcoded colors using a pattern requiring a numeric shade suffix (e.g. `bg-amber-50`), which does not match Tailwind's shade-less literals `bg-white`/`via-white`. As a result, the entire `(auth)` route group — `/login`, `/forgot-password`, `/reset-password` — was missed: `app/(auth)/layout.tsx`'s backdrop uses a hardcoded `bg-gradient-to-br from-rose-50 via-white to-pink-50`, and all three page cards use a hardcoded `bg-white ... border-rose-100` shell. Critically, the headings/labels *inside* those cards already use the semantic `text-foreground` token (e.g. `app/(auth)/login/page.tsx:45`), which correctly flips to a near-white color in dark mode — so once dark mode ships, these pages would show near-white heading text on a white card: unreadable. This is exactly the kind of contrast bug the spec's goal ("well-contrasted in both themes") exists to prevent, and it's user-facing on every login/password-reset visit, so it belongs in this plan rather than a follow-up.
+
+**Files:**
+- Modify: `app/(auth)/layout.tsx`
+- Modify: `app/(auth)/login/page.tsx`
+- Modify: `app/(auth)/forgot-password/page.tsx`
+- Modify: `app/(auth)/reset-password/page.tsx`
+
+**Interfaces:** None — only Tailwind classes change, no new functions/components/exports. Independent of Task 2 (different files, no shared state); can run before or after it.
+
+- [ ] **Step 1: Fix the gradient backdrop in `app/(auth)/layout.tsx`**
+
+Current full file:
+
+```tsx
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-pink-50">
+      {children}
+    </div>
+  );
+}
+```
+
+Replace the className with a dark-mode-aware version — the light-mode gradient is unchanged (identical classes/order), and a `dark:` override on each gradient stop replaces it with a flat dark background matching the rest of the app in dark mode (rather than inventing a new dark gradient, which the spec left as a low-stakes visual call, and a flat background is the simplest way to avoid a jarring bright gradient behind an otherwise dark UI):
+
+```tsx
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 via-white to-pink-50 dark:from-background dark:via-background dark:to-background">
+      {children}
+    </div>
+  );
+}
+```
+
+- [ ] **Step 2: Fix the card shell in `app/(auth)/login/page.tsx`**
+
+Find:
+
+```tsx
+      <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-rose-100">
+```
+
+Replace with:
+
+```tsx
+      <div className="bg-card rounded-2xl shadow-xl p-8 space-y-6 border border-border">
+```
+
+(`bg-card` resolves to `hsl(0 0% 100%)` in light mode — pure white, pixel-identical to the `bg-white` it replaces, so there is zero light-mode visual change. In dark mode it correctly resolves to the dark card color instead of staying white. Same reasoning for `border-border` replacing `border-rose-100` — a very subtle hairline border in both cases, now theme-aware instead of a fixed pale pink.)
+
+- [ ] **Step 3: Fix the card shell in `app/(auth)/forgot-password/page.tsx`**
+
+Find:
+
+```tsx
+      <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-rose-100">
+```
+
+Replace with:
+
+```tsx
+      <div className="bg-card rounded-2xl shadow-xl p-8 space-y-6 border border-border">
+```
+
+- [ ] **Step 4: Fix the card shell in `app/(auth)/reset-password/page.tsx`**
+
+Find:
+
+```tsx
+      <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-rose-100">
+```
+
+Replace with:
+
+```tsx
+      <div className="bg-card rounded-2xl shadow-xl p-8 space-y-6 border border-border">
+```
+
+- [ ] **Step 5: Confirm no other hardcoded shade-less color literals remain in this route group**
+
+```bash
+grep -rnE "(bg|text|border|from|via|to)-(white|black)\b" "app/(auth)" components/auth
+```
+
+Expected: no output (zero matches) — confirms all instances from this task's scope are gone, and none were missed.
+
+- [ ] **Step 6: Typecheck and lint**
+
+```bash
+npx tsc --noEmit
+npm run lint
+```
+
+Expected: no errors/new warnings from the four changed files.
+
+- [ ] **Step 7: Browser-driven visual verification (no login required — these are the public/unauthenticated pages)**
+
+```bash
+cat > .tmp-verify-auth-dark.mjs <<'EOF'
+import { chromium } from "playwright";
+
+const BASE = "http://localhost:3000";
+
+async function shootBoth(page, path, lightName, darkName) {
+  await page.evaluate(() => { document.documentElement.classList.remove("dark"); localStorage.setItem("theme", "light"); });
+  await page.goto(`${BASE}${path}`);
+  await page.waitForLoadState("networkidle");
+  await page.screenshot({ path: `/tmp/${lightName}`, fullPage: true });
+
+  await page.evaluate(() => { document.documentElement.classList.add("dark"); localStorage.setItem("theme", "dark"); });
+  await page.reload();
+  await page.waitForLoadState("networkidle");
+  await page.screenshot({ path: `/tmp/${darkName}`, fullPage: true });
+}
+
+async function main() {
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  await page.goto(`${BASE}/login`);
+  await shootBoth(page, "/login", "auth-login-light.png", "auth-login-dark.png");
+  await shootBoth(page, "/forgot-password", "auth-forgot-light.png", "auth-forgot-dark.png");
+  // reset-password with no token shows the "invalid link" state, which is still a valid render to check
+  await shootBoth(page, "/reset-password", "auth-reset-light.png", "auth-reset-dark.png");
+
+  await browser.close();
+  console.log("Screenshots written to /tmp/auth-*.png");
+}
+
+main().catch((err) => {
+  console.error("SCRIPT ERROR:", err);
+  process.exit(1);
+});
+EOF
+node .tmp-verify-auth-dark.mjs
+rm .tmp-verify-auth-dark.mjs
+```
+
+Read all six screenshots. Confirm, for each of the three pages in dark mode:
+- The heading and labels (`text-foreground`/`text-muted-foreground`) are clearly legible against the card background (this is the specific bug this task exists to fix — confirm it's actually fixed, don't just assume).
+- The card reads as a distinct surface against the page backdrop (not pure black-on-black).
+- The backdrop behind the card is a calm dark tone, not a leftover bright pink/white gradient.
+- Light-mode screenshots look unchanged from before this task (visual regression check, same as Task 2's approach).
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add "app/(auth)/layout.tsx" "app/(auth)/login/page.tsx" "app/(auth)/forgot-password/page.tsx" "app/(auth)/reset-password/page.tsx"
+git commit -m "$(cat <<'EOF'
+fix: make the auth route group (login/forgot/reset password) dark-mode aware
+
+These pages used a hardcoded bg-white card and a hardcoded light
+gradient backdrop, while their heading/label text already used the
+semantic text-foreground token. Once dark mode was introduced, that
+combination would render near-white heading text on a still-white
+card — unreadable. Switches the card shell to bg-card/border-border
+(pixel-identical to the old bg-white/border-rose-100 in light mode,
+correctly dark in dark mode) and gives the backdrop gradient a flat
+dark: override.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
 ## Spec Coverage Check
 
 - Section 1 (Flash-free bootstrap) → Task 1, Step 1.
@@ -580,3 +752,4 @@ EOF
 - Section 3 (Header wiring) → Task 1, Step 3.
 - Section 4 (Contrast fixes) → Task 2, Steps 1-3.
 - Section 5 (Testing) → Task 1 Step 6 (toggle/persistence/mobile) and Task 2 Steps 5-6 (contrast in dark mode, no regression in light mode) — all five bullet points from the spec's Testing section are covered by these Playwright scripts and the manual screenshot review they require.
+- Task 3 (auth route group) is not traceable to a spec section — it's a scope gap the spec's own hardcoded-color grep missed (documented in Task 3's own "Why this task exists" note), but is required to satisfy the spec's stated goal that every section of the app stay well-contrasted in both themes.
