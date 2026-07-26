@@ -54,8 +54,8 @@ function StatCard({ label, value, icon: Icon, trend }: {
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">{label}</p>
         <div className={`p-2 rounded-lg ${
-          trend === "up" ? "bg-emerald-100 text-emerald-600" :
-          trend === "down" ? "bg-red-100 text-red-600" :
+          trend === "up" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400" :
+          trend === "down" ? "bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400" :
           "bg-secondary text-muted-foreground"
         }`}>
           <Icon className="w-4 h-4" />
@@ -476,7 +476,7 @@ export default function FinancePage() {
                         {e.category}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 text-right font-medium text-red-600">
+                    <td className="px-4 py-2.5 text-right font-medium text-red-600 dark:text-red-400">
                       -{formatCurrency(parseFloat(e.amount))}
                     </td>
                     <td className="px-4 py-2.5 text-right">
@@ -506,7 +506,7 @@ export default function FinancePage() {
                 <tfoot className="border-t border-border bg-secondary">
                   <tr>
                     <td colSpan={3} className="px-4 py-2.5 font-semibold text-sm">Totale</td>
-                    <td className="px-4 py-2.5 text-right font-semibold text-red-600">
+                    <td className="px-4 py-2.5 text-right font-semibold text-red-600 dark:text-red-400">
                       -{formatCurrency(expenses.reduce((s, e) => s + parseFloat(e.amount), 0))}
                     </td>
                     <td />

@@ -54,9 +54,9 @@ interface Props {
 }
 
 const STATUS_COLORS: Record<PaymentStatus, string> = {
-  PAID: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  PENDING: "bg-amber-100 text-amber-800 border-amber-200",
-  OPTIONAL: "bg-slate-100 text-slate-700 border-slate-200",
+  PAID: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900",
+  PENDING: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900",
+  OPTIONAL: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700",
 };
 
 export default function CalendarView({

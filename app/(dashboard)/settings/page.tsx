@@ -123,20 +123,20 @@ export default function SettingsPage() {
 
         {/* ── Data Purge ── */}
         <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-amber-50 border-amber-100">
-            <Archive className="w-5 h-5 text-amber-600" />
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-amber-50 border-amber-100 dark:bg-amber-950/40 dark:border-amber-900">
+            <Archive className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             <div>
-              <h3 className="font-semibold text-amber-900">Pulizia e Archiviazione Dati</h3>
-              <p className="text-sm text-amber-700">
+              <h3 className="font-semibold text-amber-900 dark:text-amber-200">Pulizia e Archiviazione Dati</h3>
+              <p className="text-sm text-amber-700 dark:text-amber-400">
                 Esporta e cancella appuntamenti obsoleti per liberare spazio sul database
               </p>
             </div>
           </div>
 
           <div className="p-5 space-y-4">
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 flex gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-800">
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 flex gap-2 dark:bg-amber-950/40 dark:border-amber-900">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 dark:text-amber-400" />
+              <p className="text-sm text-amber-800 dark:text-amber-300">
                 <strong>Operazione irreversibile.</strong> I record verranno eliminati dal database dopo l'esportazione ZIP.
                 Assicurati di salvare il file scaricato in un luogo sicuro.
               </p>
@@ -177,13 +177,13 @@ export default function SettingsPage() {
 
             {/* Result feedback */}
             {result?.success && (
-              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 flex gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <div className="text-sm text-emerald-800">
+              <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 flex gap-2 dark:bg-emerald-950/40 dark:border-emerald-900">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5 dark:text-emerald-400" />
+                <div className="text-sm text-emerald-800 dark:text-emerald-300">
                   <p className="font-medium">Archiviazione completata</p>
                   <p>
                     {result.success.recordCount} appuntamenti esportati in{" "}
-                    <span className="font-mono text-xs bg-emerald-100 px-1 rounded">
+                    <span className="font-mono text-xs bg-emerald-100 px-1 rounded dark:bg-emerald-900/60 dark:text-emerald-200">
                       {result.success.filename}
                     </span>
                     {" "}e rimossi dal database.
