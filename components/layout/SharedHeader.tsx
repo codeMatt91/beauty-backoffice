@@ -7,6 +7,7 @@ import { Bell, LogOut } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Role } from "@prisma/client";
 import UserProfileButton from "./UserProfileButton";
+import ThemeToggle from "./ThemeToggle";
 
 const PAGE_TITLES: Record<string, string> = {
   "/calendar": "Calendario",
@@ -44,6 +45,7 @@ export default function SharedHeader({ firstName, lastName, email, role }: Props
       </div>
 
       <div className="flex items-center gap-2">
+        <ThemeToggle />
         <button
           className="p-2 rounded-md hover:bg-secondary text-muted-foreground transition-colors"
           aria-label="Notifiche"
