@@ -1,9 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import { Archive, Download, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Archive, Download, AlertTriangle, CheckCircle2, Scissors, Plus } from "lucide-react";
+import { getServiceTypes } from "@/actions/serviceTypes";
+import ServiceTypeList from "@/components/settings/ServiceTypeList";
+import ServiceTypeForm from "@/components/settings/ServiceTypeForm";
+
+interface ServiceType {
+  id: string;
+  name: string;
+}
 
 export default function SettingsPage() {
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingServiceType, setEditingServiceType] = useState<ServiceType | null>(null);
+
+  async function loadServiceTypes() {
+    const data = await getServiceTypes();
+    setServiceTypes(data);
+  }
+
+  useEffect(() => { loadServiceTypes(); }, []);
+
+  function openCreate() {
+    setEditingServiceType(null);
+    setFormOpen(true);
+  }
+
+  function openEdit(s: ServiceType) {
+    setEditingServiceType(s);
+    setFormOpen(true);
+  }
+
   const [months, setMonths] = useState(12);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
@@ -61,6 +90,36 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-6 max-w-2xl">
+
+        {/* ── Service Types ── */}
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <Scissors className="w-5 h-5 text-primary" />
+              <div>
+                <h3 className="font-semibold text-foreground">Tipologie di Prestazioni</h3>
+                <p className="text-sm text-muted-foreground">
+                  Gestisci i servizi disponibili per gli appuntamenti
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={openCreate}
+              className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Nuova prestazione</span>
+            </button>
+          </div>
+
+          <div className="p-5">
+            <ServiceTypeList
+              serviceTypes={serviceTypes}
+              onEdit={openEdit}
+              onRefresh={loadServiceTypes}
+            />
+          </div>
+        </div>
 
         {/* ── Data Purge ── */}
         <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -142,6 +201,13 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <ServiceTypeForm
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        serviceType={editingServiceType}
+        onSaved={loadServiceTypes}
+      />
     </div>
   );
 }
