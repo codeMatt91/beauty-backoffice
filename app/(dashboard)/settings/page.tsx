@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Archive, Download, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import { Archive, Download, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export default function SettingsPage() {
   const [months, setMonths] = useState(12);
@@ -139,37 +139,6 @@ export default function SettingsPage() {
                 <p className="text-sm text-destructive">{result.error}</p>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* ── WhatsApp Reminder status ── */}
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
-            <Clock className="w-5 h-5 text-primary" />
-            <div>
-              <h3 className="font-semibold">Reminder WhatsApp</h3>
-              <p className="text-sm text-muted-foreground">Notifiche automatiche via cron job</p>
-            </div>
-          </div>
-          <div className="p-5 space-y-3">
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-sm text-muted-foreground">Orario invio</span>
-              <span className="text-sm font-medium">Ogni giorno alle 09:00</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-sm text-muted-foreground">Provider</span>
-              <span className="text-sm font-medium font-mono">WHATSAPP_PROVIDER=twilio</span>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-muted-foreground">Configurazione</span>
-              <span className="text-sm font-medium font-mono">.env → TWILIO_*</span>
-            </div>
-            <p className="text-xs text-muted-foreground pt-1">
-              Il cron job è definito in <code className="bg-secondary px-1 rounded">vercel.json</code> e
-              viene eseguito automaticamente su Vercel. Per testarlo in locale, chiama{" "}
-              <code className="bg-secondary px-1 rounded">POST /api/cron/whatsapp-reminder</code> con
-              header <code className="bg-secondary px-1 rounded">Authorization: Bearer CRON_SECRET</code>.
-            </p>
           </div>
         </div>
       </div>

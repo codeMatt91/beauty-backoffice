@@ -15,6 +15,28 @@ const loginSchema = z.object({
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma) as any,
+  callbacks: {
+    ...authConfig.callbacks,
+    async jwt(params) {
+      const token = await authConfig.callbacks.jwt(params);
+      // Backfills fields added to the token after a session was already issued
+      // (e.g. firstName/lastName), so pre-existing logged-in users self-heal
+      // on their next request instead of crashing on undefined access.
+      // Edge middleware can't do this (no DB access there), so it runs here,
+      // in the Node-runtime auth() used by Server Components/Actions.
+      if (!(token as any).firstName && token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+        });
+        if (dbUser) {
+          (token as any).firstName = dbUser.firstName;
+          (token as any).lastName = dbUser.lastName;
+          (token as any).role = dbUser.role;
+        }
+      }
+      return token;
+    },
+  },
   providers: [
     Credentials({
       async authorize(credentials) {

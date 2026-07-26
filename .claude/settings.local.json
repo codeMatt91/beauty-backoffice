@@ -25,7 +25,24 @@
       "Bash(node -e \"require\\('@playwright/test'\\)\")",
       "Bash(node -e \"require\\('playwright-core'\\)\")",
       "Bash(npm test *)",
-      "Bash(echo \"EXIT_CODE:$?\")"
+      "Bash(echo \"EXIT_CODE:$?\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('scripts',{}\\), indent=2\\)\\)\")",
+      "Bash(npx prisma *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package f0a25ec *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package 8238967 *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package 020909a *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package 685f525 *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package b16a8f6 *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package b8c7ec6 *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package 452eaf1 *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package da567ea *)",
+      "Bash(/Users/matteoimbimbo/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package 2608f28 *)",
+      "WebFetch(domain:documenter.getpostman.com)",
+      "Bash(npm uninstall *)",
+      "Bash(curl -s -D /tmp/headers2.txt -o /dev/null --cookie \"authjs.session-token=$\\(cp /Users/matteoimbimbo/.claude/jobs/3c0b4a9d/tmp/mint_stale_cookie.mjs ./scratch2.mjs && npx tsx ./scratch2.mjs cmre0h3b80000udv490di2cxh andrea.zanoni93@gmail.com && rm -f ./scratch2.mjs\\)\" http://localhost:3901/calendar)",
+      "Bash(pkill -f \"next dev -p 3901\")",
+      "Bash(jobs)",
+      "Bash(rm -f /tmp/body2.html /tmp/body3.html /tmp/headers.txt /tmp/headers2.txt /tmp/new_token.txt /tmp/calendar_response.html /tmp/dev-server-test.log)"
     ]
   }
 }

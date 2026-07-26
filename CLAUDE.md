@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Security rules
 
-- Any operation that reads or writes sensitive data (user credentials, personal customer data, financial figures, WhatsApp tokens) **must run server-side** — either as a Server Action (`"use server"`) or in an API Route handler. Never expose these in Client Components or pass them through props.
+- Any operation that reads or writes sensitive data (user credentials, personal customer data, financial figures) **must run server-side** — either as a Server Action (`"use server"`) or in an API Route handler. Never expose these in Client Components or pass them through props.
 - All Server Actions must call `requireAuth()` before touching the database.
 - Admin-only operations must additionally verify `session.user.role === "ADMIN"`.
 - The `CRON_SECRET` header check in cron routes must never be removed.
@@ -21,7 +21,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Variables and functions:** camelCase (`getUserById`, `appointmentList`)
 - **React components and TypeScript types/interfaces:** PascalCase (`AppointmentModal`, `CustomerWithStats`)
-- **Files:** camelCase for utilities and actions (`lib/whatsapp.ts`, `actions/appointments.ts`); PascalCase for component files (`CalendarView.tsx`)
+- **Files:** camelCase for utilities and actions (`lib/purge.ts`, `actions/appointments.ts`); PascalCase for component files (`CalendarView.tsx`)
 - **Database columns:** snake_case via Prisma `@map` — do not deviate from this pattern
 - **Prisma model fields:** camelCase in TypeScript, mapped to snake_case in the DB
 
@@ -40,7 +40,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Postgres: 256 MB storage, 60 compute hours/month, 100 000 rows max per query result
 - Serverless functions: 100 GB-hours/month, 10 s execution timeout on Hobby plan
-- Cron jobs: 2 max on Hobby plan (currently using 1 for WhatsApp reminders)
+- Cron jobs: 2 max on Hobby plan
 
 ### Next.js / React
 
@@ -72,7 +72,6 @@ npm run db:seed      # Seed the database (tsx prisma/seed.ts)
 
 - `app/(auth)/` — unauthenticated routes (`/login`, `/forgot-password`, `/reset-password`)
 - `app/(dashboard)/` — all protected routes; layout enforces auth and renders Sidebar + MobileNav
-- `app/api/cron/` — cron endpoints (not protected by session; use `CRON_SECRET` header instead)
 - `app/api/purge/` — data archiving endpoint (ADMIN only)
 
 The root dashboard route (`/`) immediately redirects to `/calendar`.
@@ -88,7 +87,7 @@ The root dashboard route (`/`) immediately redirects to `/calendar`.
 | `/customers` | All | Client | Customer registry — `CustomerTable` + `CustomerForm` modal for create/edit via `actions/customers.ts` |
 | `/employees` | ADMIN | Client | User account management — inline `UserModal` for create/edit/delete via `actions/users.ts` |
 | `/finance` | ADMIN | Client | Financial dashboard — date-range + service + granularity filters, KPI cards, Recharts chart (`FinancialChart`), expenses table with add/delete via `actions/expenses.ts` |
-| `/settings` | ADMIN | Client | Data purge (calls `POST /api/purge`, auto-downloads the ZIP response) and WhatsApp cron status display |
+| `/settings` | ADMIN | Client | Data purge (calls `POST /api/purge`, auto-downloads the ZIP response) |
 
 **Key pattern — calendar page data flow:** `CalendarPage` (Server Component) queries Prisma directly and passes serialized props to `CalendarClient` (Client Component). `Decimal` fields must always be `.toString()`-ed before crossing the server/client boundary.
 
@@ -117,10 +116,6 @@ All data mutations are Next.js Server Actions in `actions/`. Each action calls `
 
 `Appointment.price` is a Prisma `Decimal` — serialized as a string in `AppointmentWithRelations` in `types/index.ts`.
 
-### WhatsApp reminders
-
-`lib/whatsapp.ts` supports two providers switchable via the `WHATSAPP_PROVIDER` env var (`"twilio"` default, or `"meta"`). The cron job at `app/api/cron/whatsapp-reminder/route.ts` fires daily at 09:00 UTC (configured in `vercel.json`) and sends next-day appointment reminders. It requires `Authorization: Bearer <CRON_SECRET>` on both GET and POST.
-
 ### Password reset
 
 `actions/passwordReset.ts` exposes two public Server Actions (no `requireAuth`, since the user isn't signed in): `requestPasswordReset` generates a random token, stores only its SHA-256 hash on `PasswordResetToken` (1 hour expiry, single-use), and emails the raw token as a link via `lib/email.ts` (Resend). It always returns the same generic message regardless of whether the email exists, to avoid user enumeration. `resetPassword` validates the token hash, expiry, and single-use state before updating `User.passwordHash`.
@@ -143,19 +138,6 @@ NEXTAUTH_URL=          # base URL, used to build password-reset links
 # Email – Resend (password reset)
 RESEND_API_KEY=
 EMAIL_FROM=            # verified sender, e.g. "Beauty Backoffice <noreply@yourdomain.it>"
-
-# WhatsApp – Twilio (default)
-TWILIO_ACCOUNT_SID=
-TWILIO_AUTH_TOKEN=
-TWILIO_WHATSAPP_FROM=  # e.g. "whatsapp:+14155238886"
-
-# WhatsApp – Meta (alternative, set WHATSAPP_PROVIDER=meta)
-META_WHATSAPP_TOKEN=
-META_PHONE_NUMBER_ID=
-WHATSAPP_PROVIDER=     # "twilio" | "meta"
-
-# Cron
-CRON_SECRET=
 ```
 
 ## Agent usage rules
