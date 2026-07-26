@@ -65,7 +65,7 @@ export async function sendAppointmentReminderEmail(params: {
   const { to, customerName, date, time, service } = params;
   return sendEmail({
     to,
-    subject: "Promemoria appuntamento – Beauty Backoffice",
+    subject: "Promemoria appuntamento – La Femme",
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2>Ciao ${customerName}!</h2>
