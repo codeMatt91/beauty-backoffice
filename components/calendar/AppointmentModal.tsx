@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { createAppointment, updateAppointment, deleteAppointment } from "@/actions/appointments";
 import { getCustomers } from "@/actions/customers";
+import { getServiceTypes } from "@/actions/serviceTypes";
 import { PaymentStatus } from "@prisma/client";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Trash2 } from "lucide-react";
@@ -42,19 +43,6 @@ interface Props {
   onSaved: () => void;
 }
 
-const SERVICE_TYPES = [
-  "Pulizia viso",
-  "Massaggio rilassante",
-  "Trattamento corpo",
-  "Manicure",
-  "Pedicure",
-  "Ceretta",
-  "Laser",
-  "Radiofrequenza",
-  "Pressoterapia",
-  "Altro",
-];
-
 const PAYMENT_OPTIONS: { value: PaymentStatus; label: string }[] = [
   { value: "PAID", label: "Pagato" },
   { value: "PENDING", label: "Da pagare" },
@@ -68,7 +56,8 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
 
   const [customerId, setCustomerId] = useState("");
   const [employeeId, setEmployeeId] = useState("");
-  const [serviceType, setServiceType] = useState(SERVICE_TYPES[0]);
+  const [serviceType, setServiceType] = useState("");
+  const [serviceTypes, setServiceTypes] = useState<{ id: string; name: string }[]>([]);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [price, setPrice] = useState("0");
@@ -78,13 +67,14 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
   useEffect(() => {
     if (!open) return;
     getCustomers().then(setCustomers);
+    getServiceTypes().then(setServiceTypes);
   }, [open]);
 
   useEffect(() => {
     if (!open) return;
     setCustomerId(appointment?.customerId ?? "");
     setEmployeeId(appointment?.employeeId ?? "");
-    setServiceType(appointment?.serviceType ?? SERVICE_TYPES[0]);
+    setServiceType(appointment?.serviceType ?? "");
     setStartTime(
       appointment
         ? format(new Date(appointment.startTime), "yyyy-MM-dd'T'HH:mm")
@@ -206,8 +196,9 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
                 required
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                {SERVICE_TYPES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                <option value="">Seleziona prestazione</option>
+                {serviceTypes.map((s) => (
+                  <option key={s.id} value={s.name}>{s.name}</option>
                 ))}
               </select>
             </div>
