@@ -69,11 +69,12 @@ export async function sendAppointmentReminderEmail(params: {
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2>Ciao ${customerName}!</h2>
-        <p>Ti ricordiamo il tuo appuntamento presso il nostro centro estetico:</p>
-        <p><strong>Data:</strong> ${date}<br/>
-           <strong>Ora:</strong> ${time}<br/>
-           <strong>Servizio:</strong> ${service}</p>
-        <p>Per disdire o spostare l'appuntamento, contattaci.</p>
+        <p>Ti ricordiamo il tuo appuntamento presso il nostro centro :</p>
+        <p><strong> 📅 Data:</strong> ${date}<br/>
+           <strong> ⏰ Ora:</strong> ${time}<br/>
+           <strong> 💡 Servizio:</strong> ${service}</p>
+        <p>⚠️ In caso di imprevisto, ti preghiamo di avvisarci con almeno 24h di anticipo.</p>
+        <p>Ti aspettiamo! 🌸</p>
       </div>
     `,
   });
