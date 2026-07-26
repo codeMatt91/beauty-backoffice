@@ -10,6 +10,7 @@ interface Customer {
   firstName: string;
   lastName: string;
   phoneNumber: string | null;
+  email: string | null;
   age: number | null;
   notes: string | null;
 }
@@ -27,6 +28,7 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [age, setAge] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -36,6 +38,7 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
     setFirstName(customer?.firstName ?? "");
     setLastName(customer?.lastName ?? "");
     setPhoneNumber(customer?.phoneNumber ?? "");
+    setEmail(customer?.email ?? "");
     setAge(customer?.age?.toString() ?? "");
     setNotes(customer?.notes ?? "");
   }, [open, customer]);
@@ -51,6 +54,7 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
       firstName,
       lastName,
       phoneNumber: phoneNumber || null,
+      email: email || null,
       age: age ? parseInt(age) : null,
       notes: notes || null,
     };
@@ -132,6 +136,17 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="cliente@esempio.it"
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
             </div>
 
             <div className="space-y-1">

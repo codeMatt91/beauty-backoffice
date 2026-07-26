@@ -10,6 +10,7 @@ const customerSchema = z.object({
   firstName: z.string().min(2, "Il nome è obbligatorio (min. 2 caratteri).").max(50, "Il nome è troppo lungo."),
   lastName: z.string().min(2, "Il cognome è obbligatorio (min. 2 caratteri).").max(50, "Il cognome è troppo lungo."),
   phoneNumber: z.string().optional().nullable(),
+  email: z.string().email("Inserisci un indirizzo email valido.").nullable().optional(),
   age: z.coerce
     .number({ invalid_type_error: "L'età deve essere un numero." })
     .min(1, "L'età inserita non è valida.")
