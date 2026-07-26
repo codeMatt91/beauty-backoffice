@@ -123,7 +123,7 @@ All data mutations are Next.js Server Actions in `actions/`. Each action calls `
 
 ### Email appointment reminders
 
-`lib/mailer.ts` sends transactional email via Nodemailer over SMTP (configured through `EMAIL_HOST`/`EMAIL_PORT`/`EMAIL_USER`/`EMAIL_API_KEY`/`EMAIL_FROM`), separate from the Resend integration used for password reset. The cron job at `app/api/cron/email-reminder/route.ts` fires daily at 05:00 UTC (07:00 CEST / 06:00 CET, configured in `vercel.json`) and emails next-day appointment reminders to customers with an email on file; customers without one are skipped. It requires `Authorization: Bearer <CRON_SECRET>` on both GET and POST.
+`lib/mailer.ts` handles transactional email via Nodemailer over SMTP for both appointment reminders and password reset (configured through `EMAIL_HOST`/`EMAIL_PORT`/`EMAIL_USER`/`EMAIL_API_KEY`/`EMAIL_FROM`). The cron job at `app/api/cron/email-reminder/route.ts` fires daily at 05:00 UTC (07:00 CEST / 06:00 CET, configured in `vercel.json`) and emails next-day appointment reminders to customers with an email on file; customers without one are skipped. It requires `Authorization: Bearer <CRON_SECRET>` on both GET and POST.
 
 ### Data purge
 
