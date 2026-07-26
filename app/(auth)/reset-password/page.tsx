@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default function ResetPasswordPage() {
   return (
     <div className="w-full max-w-md">
-      <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-rose-100">
+      <div className="bg-card rounded-2xl shadow-xl p-8 space-y-6 border border-border">
         <div className="text-center space-y-1">
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl">💆</span>
