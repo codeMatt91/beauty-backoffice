@@ -100,15 +100,15 @@ export default function CustomerTable({
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Email
               </th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              {/* <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Età
-              </th>
+              </th> */}
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Appuntamenti
               </th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              {/* <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Registrato
-              </th>
+              </th> */}
               <th className="px-4 py-3" />
             </tr>
           </thead>
