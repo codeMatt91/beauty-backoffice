@@ -103,6 +103,7 @@ model Appointment {
 
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   employee User?    @relation("EmployeeAppointments", fields: [employeeId], references: [id], onDelete: SetNull)
+  notifications Notification[]
 
   @@index([startTime])
   @@index([customerId])
@@ -120,6 +121,23 @@ model MonthlyExpense {
 
   @@index([date])
   @@map("monthly_expenses")
+}
+
+model Notification {
+  id              String       @id @default(cuid())
+  customerName    String       @map("customer_name")
+  appointmentType String       @map("appointment_type")
+  success         Boolean
+  errorMessage    String?      @map("error_message")
+  read            Boolean      @default(false)
+  appointmentId   String?      @map("appointment_id")
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
 }
 
 // Tabella per il tracciamento degli archivi di purge
