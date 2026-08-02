@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendAppointmentReminderEmail } from "@/lib/mailer";
+import { logReminderNotification } from "@/lib/notifications";
 import { format, addDays, startOfDay, endOfDay } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -78,6 +79,13 @@ export async function POST(req: NextRequest) {
         success: false,
         error: "Email mancante",
       });
+      await logReminderNotification({
+        customerName: `${customer.firstName} ${customer.lastName}`,
+        appointmentType: apt.serviceType,
+        success: false,
+        errorMessage: "Email mancante",
+        appointmentId: apt.id,
+      });
       continue;
     }
 
@@ -95,6 +103,14 @@ export async function POST(req: NextRequest) {
       email: customer.email,
       appointmentId: apt.id,
       ...sendResult,
+    });
+
+    await logReminderNotification({
+      customerName: `${customer.firstName} ${customer.lastName}`,
+      appointmentType: apt.serviceType,
+      success: sendResult.success,
+      errorMessage: sendResult.error ?? null,
+      appointmentId: apt.id,
     });
 
     // Piccola pausa tra gli invii per rispettare i rate limit dell'SMTP
