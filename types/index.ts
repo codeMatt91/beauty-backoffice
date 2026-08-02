@@ -55,3 +55,14 @@ export interface FinancialSummary {
 export interface PurgeOptions {
   olderThanMonths: number;
 }
+
+export interface NotificationItem {
+  id: string;
+  customerName: string;
+  appointmentType: string;
+  success: boolean;
+  errorMessage: string | null;
+  read: boolean;
+  appointmentId: string | null;
+  createdAt: string; // ISO string — Prisma DateTime serialized for the client
+}
