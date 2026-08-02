@@ -4,12 +4,14 @@ import { Role } from "@prisma/client";
 import Sidebar from "@/components/layout/Sidebar";
 import MobileNav from "@/components/layout/MobileNav";
 import SharedHeader from "@/components/layout/SharedHeader";
+import { hasUnreadNotifications } from "@/actions/notifications";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
   const user = session.user as any;
+  const hasUnread = await hasUnreadNotifications();
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -21,6 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           lastName={user.lastName}
           email={user.email}
           role={user.role as Role}
+          hasUnread={hasUnread}
         />
         <main className="flex-1 overflow-auto pb-16 lg:pb-0">
           {children}

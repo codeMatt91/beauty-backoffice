@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Bell, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Role } from "@prisma/client";
 import UserProfileButton from "./UserProfileButton";
 import ThemeToggle from "./ThemeToggle";
+import NotificationBell from "./NotificationBell";
 
 const PAGE_TITLES: Record<string, string> = {
   "/calendar": "Calendario",
@@ -22,9 +23,10 @@ interface Props {
   lastName: string;
   email: string;
   role: Role;
+  hasUnread: boolean;
 }
 
-export default function SharedHeader({ firstName, lastName, email, role }: Props) {
+export default function SharedHeader({ firstName, lastName, email, role, hasUnread }: Props) {
   const pathname = usePathname();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -46,12 +48,7 @@ export default function SharedHeader({ firstName, lastName, email, role }: Props
 
       <div className="flex items-center gap-2">
         <ThemeToggle />
-        <button
-          className="p-2 rounded-md hover:bg-secondary text-muted-foreground transition-colors"
-          aria-label="Notifiche"
-        >
-          <Bell className="w-4 h-4" />
-        </button>
+        <NotificationBell hasUnread={hasUnread} />
         <UserProfileButton
           firstName={firstName}
           lastName={lastName}
