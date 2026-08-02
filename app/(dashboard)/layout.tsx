@@ -11,7 +11,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session?.user) redirect("/login");
 
   const user = session.user as any;
-  const hasUnread = await hasUnreadNotifications();
+  let hasUnread = false;
+  try {
+    hasUnread = await hasUnreadNotifications();
+  } catch {
+    hasUnread = false;
+  }
 
   return (
     <div className="flex min-h-screen bg-background">

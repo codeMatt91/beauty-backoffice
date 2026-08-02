@@ -10,7 +10,7 @@ export async function logReminderNotification(params: {
   appointmentType: string;
   success: boolean;
   errorMessage?: string | null;
-  appointmentId: string;
+  appointmentId: string | null;
 }) {
   await prisma.notification.create({ data: params });
 }
