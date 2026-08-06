@@ -8,6 +8,7 @@ import { getServiceTypes } from "@/actions/serviceTypes";
 import { PaymentStatus } from "@prisma/client";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Trash2 } from "lucide-react";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 
 interface Customer {
   id: string;
@@ -100,6 +101,10 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!customerId) {
+      setError("Seleziona un cliente");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -165,19 +170,15 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
           <form onSubmit={handleSubmit} className="p-5 space-y-4">
             <div className="space-y-1">
               <label className="text-sm font-medium">Cliente *</label>
-              <select
+              <SearchableSelect
+                items={customers.map((c) => ({ id: c.id, label: `${c.lastName} ${c.firstName}` }))}
                 value={customerId}
-                onChange={(e) => setCustomerId(e.target.value)}
-                required
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Seleziona cliente</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.lastName} {c.firstName}
-                  </option>
-                ))}
-              </select>
+                onChange={setCustomerId}
+                placeholder="Cerca cliente per nome o cognome..."
+                emptyMessage="Nessun cliente trovato"
+                ariaLabel="Cliente"
+                clearLabel="Cambia cliente"
+              />
             </div>
 
             <div className="space-y-1">
