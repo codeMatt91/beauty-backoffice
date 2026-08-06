@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { X } from "lucide-react";
 
@@ -38,6 +38,27 @@ export default function SearchableSelect({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+
+  // When this component is nested inside a Radix Dialog, the Dialog's modal
+  // scroll lock (react-remove-scroll) blocks trackpad/wheel scrolling here:
+  // it intercepts wheel events bubbling up through the *React* tree (which
+  // still runs through the Dialog even though Popover.Content is portaled to
+  // document.body) and calls preventDefault before the browser can scroll.
+  // Scroll the list manually so it keeps working regardless of that lock
+  // (touch scrolling on mobile isn't intercepted the same way, which is why
+  // only desktop trackpad/wheel scrolling is affected).
+  function handleWheel(e: WheelEvent) {
+    const el = e.currentTarget as HTMLDivElement;
+    el.scrollTop += e.deltaY;
+    e.preventDefault();
+  }
+
+  const attachListRef = useCallback((node: HTMLDivElement | null) => {
+    listRef.current?.removeEventListener("wheel", handleWheel);
+    listRef.current = node;
+    node?.addEventListener("wheel", handleWheel, { passive: false });
+  }, []);
 
   const selectedItem = items.find((i) => i.id === value);
 
@@ -98,6 +119,7 @@ export default function SearchableSelect({
       </Popover.Anchor>
       <Popover.Portal>
         <Popover.Content
+          ref={attachListRef}
           align="start"
           sideOffset={4}
           onOpenAutoFocus={(e) => e.preventDefault()}
