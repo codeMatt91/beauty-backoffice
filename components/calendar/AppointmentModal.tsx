@@ -171,6 +171,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
                 placeholder="Cerca cliente per nome o cognome..."
                 emptyMessage="Nessun cliente trovato"
                 ariaLabel="Cliente"
+                clearLabel="Cambia cliente"
               />
             </div>
 

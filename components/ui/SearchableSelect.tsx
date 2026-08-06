@@ -16,12 +16,13 @@ interface SearchableSelectProps {
   placeholder?: string;
   emptyMessage?: string;
   ariaLabel: string;
+  clearLabel?: string;
 }
 
 function normalize(s: string) {
   return s
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 }
 
@@ -32,6 +33,7 @@ export default function SearchableSelect({
   placeholder = "Cerca...",
   emptyMessage = "Nessun risultato",
   ariaLabel,
+  clearLabel = "Cancella selezione",
 }: SearchableSelectProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -67,7 +69,7 @@ export default function SearchableSelect({
         <button
           type="button"
           onClick={handleClear}
-          aria-label="Cambia cliente"
+          aria-label={clearLabel}
           className="p-0.5 rounded hover:bg-secondary text-muted-foreground shrink-0 ml-2"
         >
           <X className="w-4 h-4" />
