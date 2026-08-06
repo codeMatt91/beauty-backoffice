@@ -82,7 +82,7 @@ export default function CustomerTable({
           onChange={(e) =>
             setSearch(e.target.value)
           }
-          className="w-full pl-9 pr-4 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full pl-9 pr-4 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
