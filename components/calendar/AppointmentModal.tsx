@@ -186,7 +186,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
               <select
                 value={employeeId}
                 onChange={(e) => setEmployeeId(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">Nessuna assegnazione</option>
                 {employees.map((emp) => (
@@ -201,7 +201,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
                 value={serviceType}
                 onChange={(e) => handleServiceTypeChange(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">Seleziona prestazione</option>
                 {serviceTypes.map((s) => (
@@ -218,7 +218,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div className="space-y-1">
@@ -228,7 +228,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
             </div>
@@ -242,7 +242,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
                   step="0.01"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div className="space-y-1">
@@ -250,7 +250,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
                 <select
                   value={paymentStatus}
                   onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {PAYMENT_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
@@ -265,7 +265,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
               />
             </div>
 

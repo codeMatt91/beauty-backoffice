@@ -114,7 +114,7 @@ export default function SearchableSelect({
           placeholder={placeholder}
           aria-label={ariaLabel}
           autoComplete="off"
-          className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </Popover.Anchor>
       <Popover.Portal>
