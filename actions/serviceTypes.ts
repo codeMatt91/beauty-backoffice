@@ -8,11 +8,13 @@ import { ActionResult, zodErrorToMessage } from "@/lib/actionResult";
 
 const serviceTypeSchema = z.object({
   name: z.string().min(2, "Il nome è obbligatorio (min. 2 caratteri).").max(50, "Il nome è troppo lungo."),
+  defaultPrice: z.coerce.number().nonnegative("Il prezzo non può essere negativo."),
 });
 
 export async function getServiceTypes() {
   await requireAuth();
-  return prisma.serviceType.findMany({ orderBy: { name: "asc" } });
+  const serviceTypes = await prisma.serviceType.findMany({ orderBy: { name: "asc" } });
+  return serviceTypes.map((s) => ({ ...s, defaultPrice: s.defaultPrice.toString() }));
 }
 
 export async function createServiceType(data: z.infer<typeof serviceTypeSchema>): Promise<ActionResult> {

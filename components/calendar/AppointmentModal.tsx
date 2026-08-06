@@ -57,7 +57,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
   const [customerId, setCustomerId] = useState("");
   const [employeeId, setEmployeeId] = useState("");
   const [serviceType, setServiceType] = useState("");
-  const [serviceTypes, setServiceTypes] = useState<{ id: string; name: string }[]>([]);
+  const [serviceTypes, setServiceTypes] = useState<{ id: string; name: string; defaultPrice: string }[]>([]);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [price, setPrice] = useState("0");
@@ -91,6 +91,12 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
   }, [open, appointment, defaultDate]);
 
   if (!open) return null;
+
+  function handleServiceTypeChange(name: string) {
+    setServiceType(name);
+    const found = serviceTypes.find((s) => s.name === name);
+    if (found) setPrice(found.defaultPrice);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -192,7 +198,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
               <label className="text-sm font-medium">Prestazione *</label>
               <select
                 value={serviceType}
-                onChange={(e) => setServiceType(e.target.value)}
+                onChange={(e) => handleServiceTypeChange(e.target.value)}
                 required
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >

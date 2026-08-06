@@ -9,6 +9,7 @@ import ServiceTypeForm from "@/components/settings/ServiceTypeForm";
 interface ServiceType {
   id: string;
   name: string;
+  defaultPrice: string;
 }
 
 export default function SettingsPage() {

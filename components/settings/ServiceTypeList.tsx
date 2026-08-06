@@ -7,6 +7,11 @@ import { deleteServiceType } from "@/actions/serviceTypes";
 interface ServiceType {
   id: string;
   name: string;
+  defaultPrice: string;
+}
+
+function formatPrice(price: string) {
+  return `€ ${Number(price).toFixed(2)}`;
 }
 
 interface Props {
@@ -63,6 +68,9 @@ export default function ServiceTypeList({ serviceTypes, onEdit, onRefresh }: Pro
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Nome
               </th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                Prezzo
+              </th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -70,6 +78,7 @@ export default function ServiceTypeList({ serviceTypes, onEdit, onRefresh }: Pro
             {filtered.map((s) => (
               <tr key={s.id} className="hover:bg-secondary/30 transition-colors">
                 <td className="px-4 py-3 font-medium">{s.name}</td>
+                <td className="px-4 py-3 text-muted-foreground">{formatPrice(s.defaultPrice)}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1 justify-end">
                     <button
@@ -105,7 +114,10 @@ export default function ServiceTypeList({ serviceTypes, onEdit, onRefresh }: Pro
         {filtered.map((s) => (
           <div key={s.id} className="bg-card rounded-xl border border-border p-4">
             <div className="flex items-center justify-between">
-              <p className="font-medium text-foreground">{s.name}</p>
+              <div>
+                <p className="font-medium text-foreground">{s.name}</p>
+                <p className="text-sm text-muted-foreground">{formatPrice(s.defaultPrice)}</p>
+              </div>
               <div className="flex gap-1">
                 <button
                   onClick={() => onEdit(s)}

@@ -24,11 +24,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // on their next request instead of crashing on undefined access.
       // Edge middleware can't do this (no DB access there), so it runs here,
       // in the Node-runtime auth() used by Server Components/Actions.
-      if (!(token as any).firstName && token.id) {
+      if (!(token as any).firstName && token.sub) {
         const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
+          where: { id: token.sub },
         });
         if (dbUser) {
+          token.id = dbUser.id;
           (token as any).firstName = dbUser.firstName;
           (token as any).lastName = dbUser.lastName;
           (token as any).role = dbUser.role;

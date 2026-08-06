@@ -8,6 +8,7 @@ import { X } from "lucide-react";
 interface ServiceType {
   id: string;
   name: string;
+  defaultPrice: string;
 }
 
 interface Props {
@@ -21,11 +22,13 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [defaultPrice, setDefaultPrice] = useState("");
 
   useEffect(() => {
     if (!open) return;
     setError(null);
     setName(serviceType?.name ?? "");
+    setDefaultPrice(serviceType?.defaultPrice ?? "");
   }, [open, serviceType]);
 
   if (!open) return null;
@@ -37,8 +40,8 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
 
     try {
       const result = serviceType
-        ? await updateServiceType(serviceType.id, { name })
-        : await createServiceType({ name });
+        ? await updateServiceType(serviceType.id, { name, defaultPrice: parseFloat(defaultPrice) })
+        : await createServiceType({ name, defaultPrice: parseFloat(defaultPrice) });
       if (!result.success) {
         setError(result.error);
         return;
@@ -77,6 +80,21 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
                 onChange={(e) => setName(e.target.value)}
                 required
                 placeholder="Es. Manicure"
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium" htmlFor="serviceTypePrice">Prezzo (€) *</label>
+              <input
+                id="serviceTypePrice"
+                type="number"
+                min="0"
+                step="0.01"
+                value={defaultPrice}
+                onChange={(e) => setDefaultPrice(e.target.value)}
+                required
+                placeholder="Es. 25.00"
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
