@@ -41,23 +41,43 @@ export default function SearchableSelect({
   const listRef = useRef<HTMLDivElement | null>(null);
 
   // When this component is nested inside a Radix Dialog, the Dialog's modal
-  // scroll lock (react-remove-scroll) blocks trackpad/wheel scrolling here:
-  // it intercepts wheel events bubbling up through the *React* tree (which
+  // scroll lock (react-remove-scroll) blocks scrolling here: it intercepts
+  // wheel *and* touchmove events bubbling up through the *React* tree (which
   // still runs through the Dialog even though Popover.Content is portaled to
   // document.body) and calls preventDefault before the browser can scroll.
-  // Scroll the list manually so it keeps working regardless of that lock
-  // (touch scrolling on mobile isn't intercepted the same way, which is why
-  // only desktop trackpad/wheel scrolling is affected).
+  // This affects touch scrolling on mobile too (confirmed on-device), not
+  // just desktop trackpad/wheel — so both are scrolled manually here,
+  // independent of the browser's native (blocked) scroll behavior.
   function handleWheel(e: WheelEvent) {
     const el = e.currentTarget as HTMLDivElement;
     el.scrollTop += e.deltaY;
     e.preventDefault();
   }
 
+  const touchYRef = useRef<number | null>(null);
+
+  function handleTouchStart(e: TouchEvent) {
+    touchYRef.current = e.touches[0]?.clientY ?? null;
+  }
+
+  function handleTouchMove(e: TouchEvent) {
+    const el = e.currentTarget as HTMLDivElement;
+    const currentY = e.touches[0]?.clientY;
+    if (currentY !== undefined && touchYRef.current !== null) {
+      el.scrollTop -= currentY - touchYRef.current;
+    }
+    touchYRef.current = currentY ?? null;
+    e.preventDefault();
+  }
+
   const attachListRef = useCallback((node: HTMLDivElement | null) => {
     listRef.current?.removeEventListener("wheel", handleWheel);
+    listRef.current?.removeEventListener("touchstart", handleTouchStart);
+    listRef.current?.removeEventListener("touchmove", handleTouchMove);
     listRef.current = node;
     node?.addEventListener("wheel", handleWheel, { passive: false });
+    node?.addEventListener("touchstart", handleTouchStart, { passive: true });
+    node?.addEventListener("touchmove", handleTouchMove, { passive: false });
   }, []);
 
   const selectedItem = items.find((i) => i.id === value);
