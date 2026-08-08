@@ -21,7 +21,7 @@ interface Customer {
   phoneNumber: string | null;
   age: number | null;
   notes: string | null;
-  createdAt: Date;
+  createdAt: string; // ISO string — Prisma DateTime serialized for the client
   _count: { appointments: number };
 }
 
