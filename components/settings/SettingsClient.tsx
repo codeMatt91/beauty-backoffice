@@ -140,7 +140,7 @@ export default function SettingsClient({ initialServiceTypes }: Props) {
             <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 flex gap-2 dark:bg-amber-950/40 dark:border-amber-900">
               <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 dark:text-amber-400" />
               <p className="text-sm text-amber-800 dark:text-amber-300">
-                <strong>Operazione irreversibile.</strong> I record verranno eliminati dal database dopo l&apos;esportazione ZIP.
+                <strong>Operazione irreversibile.</strong> I record verranno eliminati dal database dopo l'esportazione ZIP.
                 Assicurati di salvare il file scaricato in un luogo sicuro.
               </p>
             </div>
