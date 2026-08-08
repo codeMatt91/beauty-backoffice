@@ -10,7 +10,7 @@ export interface UserRecord {
   lastName: string;
   email: string;
   role: Role;
-  createdAt: Date;
+  createdAt: string; // ISO string — Prisma DateTime serialized for the client
 }
 
 interface Props {
