@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function CalendarLoading() {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" role="status" aria-label="Caricamento in corso">
       {/* Toolbar skeleton — mirrors CalendarView's toolbar */}
       <div className="flex flex-col gap-2 px-4 py-3 border-b border-border bg-card lg:flex-row lg:items-center">
         <div className="flex items-center gap-2">

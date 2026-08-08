@@ -3,7 +3,7 @@ import { UserCog, Plus } from "lucide-react";
 
 export default function EmployeesLoading() {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" role="status" aria-label="Caricamento in corso">
       <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

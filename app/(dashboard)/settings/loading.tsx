@@ -3,7 +3,7 @@ import { Archive, Download, AlertTriangle, Scissors, Plus } from "lucide-react";
 
 export default function SettingsLoading() {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" role="status" aria-label="Caricamento in corso">
       <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-6 max-w-2xl">
 
         {/* ── Service Types (skeleton) ── */}
@@ -71,6 +71,29 @@ export default function SettingsLoading() {
                 Assicurati di salvare il file scaricato in un luogo sicuro.
               </p>
             </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">
+                Archivia appuntamenti più vecchi di:
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  disabled
+                  value={12}
+                  readOnly
+                  className="w-24 px-3 py-2 rounded-lg border border-input bg-background text-sm"
+                />
+                <span className="text-sm text-muted-foreground">mesi fa</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Saranno archiviati tutti gli appuntamenti con data antecedente al {
+                  new Date(
+                    new Date().setMonth(new Date().getMonth() - 12)
+                  ).toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric" })
+                }
+              </p>
+            </div>
+
             <button disabled className="flex items-center gap-2 px-4 py-2.5 bg-amber-600/50 text-white rounded-lg text-sm font-medium">
               <Download className="w-4 h-4" />
               Esporta e cancella dati

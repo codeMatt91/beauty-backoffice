@@ -3,7 +3,7 @@ import { Filter, TrendingUp, TrendingDown, DollarSign, Plus } from "lucide-react
 
 export default function FinanceLoading() {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" role="status" aria-label="Caricamento in corso">
       <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-5">
 
         {/* Filters bar */}
@@ -48,6 +48,7 @@ export default function FinanceLoading() {
               Aggiungi spesa
             </button>
           </div>
+          <div className="bg-secondary h-11" />
           <div className="divide-y divide-border">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-4 px-4 py-2.5">

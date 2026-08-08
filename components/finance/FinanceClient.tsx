@@ -42,17 +42,19 @@ interface Props {
   initialData: FinancialData;
   initialExpenses: ExpenseRecord[];
   initialServiceTypes: { id: string; name: string }[];
+  initialDateFrom: string;
+  initialDateTo: string;
 }
 
-export default function FinanceClient({ initialData, initialExpenses, initialServiceTypes }: Props) {
+export default function FinanceClient({ initialData, initialExpenses, initialServiceTypes, initialDateFrom, initialDateTo }: Props) {
   const [data, setData] = useState<FinancialData>(initialData);
   const [expenses, setExpenses] = useState<ExpenseRecord[]>(initialExpenses);
   const [serviceTypes] = useState<{ id: string; name: string }[]>(initialServiceTypes);
   const [loading, startTransition] = useTransition();
 
   // Filters
-  const [dateFrom, setDateFrom] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
-  const [dateTo, setDateTo] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
+  const [dateFrom, setDateFrom] = useState(initialDateFrom);
+  const [dateTo, setDateTo] = useState(initialDateTo);
   const [serviceFilter, setServiceFilter] = useState("Tutti");
   const [granularity, setGranularity] = useState<Granularity>("day");
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);

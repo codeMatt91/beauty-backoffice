@@ -1,4 +1,4 @@
-import { startOfMonth, endOfMonth } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import { getFinancialSummary, getExpenses } from "@/actions/expenses";
 import { getServiceTypes } from "@/actions/serviceTypes";
 import FinanceClient from "@/components/finance/FinanceClient";
@@ -6,7 +6,6 @@ import FinanceClient from "@/components/finance/FinanceClient";
 export default async function FinancePage() {
   const from = startOfMonth(new Date());
   const to = endOfMonth(new Date());
-  to.setHours(23, 59, 59, 999);
 
   const [financialData, expenses, serviceTypes] = await Promise.all([
     getFinancialSummary(from, to),
@@ -19,6 +18,8 @@ export default async function FinancePage() {
       initialData={financialData}
       initialExpenses={expenses}
       initialServiceTypes={serviceTypes.map((s) => ({ id: s.id, name: s.name }))}
+      initialDateFrom={format(from, "yyyy-MM-dd")}
+      initialDateTo={format(to, "yyyy-MM-dd")}
     />
   );
 }
