@@ -1,0 +1,396 @@
+"use client";
+
+import { useState, useEffect, useTransition } from "react";
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval, eachMonthOfInterval } from "date-fns";
+import { it } from "date-fns/locale";
+import { getFinancialSummary, getExpenses, deleteExpense } from "@/actions/expenses";
+import { StatCard } from "@/components/finance/StatCard";
+import { AddExpenseModal } from "@/components/finance/AddExpenseModal";
+import FinancialChart from "@/components/finance/FinancialChart";
+import { formatCurrency } from "@/lib/utils";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Plus,
+  Filter,
+  Trash2,
+  X,
+  Download,
+} from "lucide-react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface FinancialData {
+  appointments: { startTime: string; price: string; serviceType: string }[];
+  expenses: { date: string; amount: string; category: string }[];
+}
+
+interface ExpenseRecord {
+  id: string;
+  amount: string;
+  description: string;
+  category: string;
+  date: string;
+}
+
+type Granularity = "day" | "month";
+
+// ─── Main Client Component ─────────────────────────────────────────────────────
+
+interface Props {
+  initialData: FinancialData;
+  initialExpenses: ExpenseRecord[];
+  initialServiceTypes: { id: string; name: string }[];
+}
+
+export default function FinanceClient({ initialData, initialExpenses, initialServiceTypes }: Props) {
+  const [data, setData] = useState<FinancialData>(initialData);
+  const [expenses, setExpenses] = useState<ExpenseRecord[]>(initialExpenses);
+  const [serviceTypes] = useState<{ id: string; name: string }[]>(initialServiceTypes);
+  const [loading, startTransition] = useTransition();
+
+  // Filters
+  const [dateFrom, setDateFrom] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+  const [dateTo, setDateTo] = useState(format(endOfMonth(new Date()), "yyyy-MM-dd"));
+  const [serviceFilter, setServiceFilter] = useState("Tutti");
+  const [granularity, setGranularity] = useState<Granularity>("day");
+  const [addExpenseOpen, setAddExpenseOpen] = useState(false);
+  const [exportingMonth, setExportingMonth] = useState(false);
+  const [exportingYear, setExportingYear] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [activePreset, setActivePreset] = useState<"month" | "year" | null>(null);
+  const [isFirstRender, setIsFirstRender] = useState(true);
+
+  async function loadData() {
+    const from = new Date(dateFrom);
+    const to = new Date(dateTo);
+    to.setHours(23, 59, 59, 999);
+    const [fin, exp] = await Promise.all([
+      getFinancialSummary(from, to),
+      getExpenses(from, to),
+    ]);
+    setData(fin);
+    setExpenses(exp as ExpenseRecord[]);
+  }
+
+  useEffect(() => {
+    // Skip the redundant fetch on mount — initialData/initialExpenses already
+    // cover the default range (this month), fetched server-side.
+    if (isFirstRender) {
+      setIsFirstRender(false);
+      return;
+    }
+    startTransition(() => { loadData(); });
+  }, [dateFrom, dateTo]);
+
+  // ── Compute chart data ──────────────────────────────────────────────────────
+
+  const chartData = (() => {
+    const from = new Date(dateFrom);
+    const to = new Date(dateTo);
+
+    const filteredApts = serviceFilter === "Tutti"
+      ? data.appointments
+      : data.appointments.filter((a) => a.serviceType === serviceFilter);
+
+    if (granularity === "day") {
+      const days = eachDayOfInterval({ start: from, end: to });
+      return days.map((day) => {
+        const dayStr = format(day, "yyyy-MM-dd");
+        const entrate = filteredApts
+          .filter((a) => format(new Date(a.startTime), "yyyy-MM-dd") === dayStr)
+          .reduce((sum, a) => sum + parseFloat(a.price), 0);
+        const uscite = data.expenses
+          .filter((e) => format(new Date(e.date), "yyyy-MM-dd") === dayStr)
+          .reduce((sum, e) => sum + parseFloat(e.amount), 0);
+        return { label: format(day, "d/M"), entrate, uscite, profitto: entrate - uscite };
+      });
+    } else {
+      const months = eachMonthOfInterval({ start: from, end: to });
+      return months.map((month) => {
+        const monthStr = format(month, "yyyy-MM");
+        const entrate = filteredApts
+          .filter((a) => format(new Date(a.startTime), "yyyy-MM") === monthStr)
+          .reduce((sum, a) => sum + parseFloat(a.price), 0);
+        const uscite = data.expenses
+          .filter((e) => format(new Date(e.date), "yyyy-MM") === monthStr)
+          .reduce((sum, e) => sum + parseFloat(e.amount), 0);
+        return { label: format(month, "MMM yy", { locale: it }), entrate, uscite, profitto: entrate - uscite };
+      });
+    }
+  })();
+
+  // ── KPI totals ──────────────────────────────────────────────────────────────
+
+  const totaleEntrate = chartData.reduce((s, d) => s + d.entrate, 0);
+  const totaleUscite = chartData.reduce((s, d) => s + d.uscite, 0);
+  const profittoNetto = totaleEntrate - totaleUscite;
+
+  // ── Quick date presets ──────────────────────────────────────────────────────
+
+  const presets: { label: string; id: "month" | "year"; fn: () => void }[] = [
+    {
+      label: "Questo mese",
+      id: "month",
+      fn: () => {
+        setDateFrom(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+        setDateTo(format(endOfMonth(new Date()), "yyyy-MM-dd"));
+        setGranularity("day");
+        setActivePreset("month");
+      },
+    },
+    {
+      label: "Quest'anno",
+      id: "year",
+      fn: () => {
+        setDateFrom(format(startOfYear(new Date()), "yyyy-MM-dd"));
+        setDateTo(format(endOfYear(new Date()), "yyyy-MM-dd"));
+        setGranularity("month");
+        setActivePreset("year");
+      },
+    },
+  ];
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-5">
+
+        {/* ── Filters bar ── */}
+        <div className="bg-card rounded-xl border border-border p-4 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <Filter className="w-4 h-4" />
+            Filtri
+          </div>
+
+          <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => { setDateFrom(e.target.value); setActivePreset(null); }}
+                className="w-full min-w-0 sm:w-auto px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <span className="hidden sm:inline text-muted-foreground text-sm">→</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => { setDateTo(e.target.value); setActivePreset(null); }}
+                className="w-full min-w-0 sm:w-auto px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <select
+              value={serviceFilter}
+              onChange={(e) => setServiceFilter(e.target.value)}
+              className="w-full lg:w-auto px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {["Tutti", ...serviceTypes.map((s) => s.name)].map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+
+            <div className="flex items-center rounded-lg border border-border overflow-hidden w-full lg:w-auto">
+              <button
+                onClick={() => setGranularity("day")}
+                className={`flex-1 lg:flex-none px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "day" ? "bg-primary text-white" : "hover:bg-secondary"}`}
+              >
+                Giornaliero
+              </button>
+              <button
+                onClick={() => setGranularity("month")}
+                className={`flex-1 lg:flex-none px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "month" ? "bg-primary text-white" : "hover:bg-secondary"}`}
+              >
+                Mensile
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 lg:flex lg:gap-3">
+              {presets.map((p) => (
+                <button
+                  key={p.label}
+                  onClick={p.fn}
+                  className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${
+                    activePreset === p.id
+                      ? "bg-primary text-white border-primary"
+                      : "border-border hover:bg-secondary"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 border-t border-border pt-1 lg:border-t-0 lg:pt-0 lg:flex lg:gap-3">
+              <button
+                onClick={async () => {
+                  setExportError(null);
+                  setExportingMonth(true);
+                  try {
+                    const { exportFinancePDF } = await import("@/lib/exportFinancePDF");
+                    await exportFinancePDF("month");
+                  } catch (e) {
+                    setExportError(e instanceof Error ? e.message : "Errore durante l'export. Riprova.");
+                  } finally {
+                    setExportingMonth(false);
+                  }
+                }}
+                disabled={exportingMonth}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {exportingMonth ? "..." : "Esporta mese"}
+              </button>
+
+              <button
+                onClick={async () => {
+                  setExportError(null);
+                  setExportingYear(true);
+                  try {
+                    const { exportFinancePDF } = await import("@/lib/exportFinancePDF");
+                    await exportFinancePDF("year");
+                  } catch (e) {
+                    setExportError(e instanceof Error ? e.message : "Errore durante l'export. Riprova.");
+                  } finally {
+                    setExportingYear(false);
+                  }
+                }}
+                disabled={exportingYear}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {exportingYear ? "..." : "Esporta anno"}
+              </button>
+            </div>
+          </div>
+
+          {exportError !== null && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive flex items-center justify-between gap-2">
+              <span>{exportError}</span>
+              <button
+                onClick={() => setExportError(null)}
+                aria-label="Chiudi errore"
+                className="shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── KPI Cards ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <StatCard label="Entrate totali" value={formatCurrency(totaleEntrate)} icon={TrendingUp} trend="up" />
+          <StatCard label="Uscite totali" value={formatCurrency(totaleUscite)} icon={TrendingDown} trend="down" />
+          <StatCard
+            label="Profitto netto"
+            value={formatCurrency(profittoNetto)}
+            icon={DollarSign}
+            trend={profittoNetto >= 0 ? "up" : "down"}
+          />
+        </div>
+
+        {/* ── Chart ── */}
+        <div className="bg-card rounded-xl border border-border p-4">
+          <h3 className="font-semibold text-foreground mb-4">
+            Entrate vs Uscite
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
+              ({granularity === "day" ? "giornaliero" : "mensile"})
+            </span>
+          </h3>
+          {loading ? (
+            <div className="h-64 flex items-center justify-center text-muted-foreground text-sm">
+              Caricamento...
+            </div>
+          ) : (
+            <FinancialChart data={chartData} granularity={granularity} />
+          )}
+        </div>
+
+        {/* ── Expenses table ── */}
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <h3 className="font-semibold text-foreground">Spese del periodo</h3>
+            <button
+              onClick={() => setAddExpenseOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90"
+            >
+              <Plus className="w-4 h-4" />
+              Aggiungi spesa
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-secondary">
+                <tr>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Data</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Descrizione</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Categoria</th>
+                  <th className="text-right px-4 py-2.5 font-medium text-muted-foreground">Importo</th>
+                  <th className="px-4 py-2.5" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {expenses.map((e) => (
+                  <tr key={e.id} className="hover:bg-secondary/30">
+                    <td className="px-4 py-2.5 text-muted-foreground">
+                      {format(new Date(e.date), "dd/MM/yyyy")}
+                    </td>
+                    <td className="px-4 py-2.5">{e.description}</td>
+                    <td className="px-4 py-2.5">
+                      <span className="text-xs font-medium bg-secondary px-2 py-0.5 rounded-full">
+                        {e.category}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-medium text-red-600 dark:text-red-400">
+                      -{formatCurrency(parseFloat(e.amount))}
+                    </td>
+                    <td className="px-4 py-2.5 text-right">
+                      <button
+                        onClick={async () => {
+                          if (!confirm("Eliminare questa spesa?")) return;
+                          await deleteExpense(e.id);
+                          loadData();
+                        }}
+                        className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                        aria-label={`Elimina spesa: ${e.description}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {expenses.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-sm">
+                      Nessuna spesa registrata nel periodo
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+              {expenses.length > 0 && (
+                <tfoot className="border-t border-border bg-secondary">
+                  <tr>
+                    <td colSpan={3} className="px-4 py-2.5 font-semibold text-sm">Totale</td>
+                    <td className="px-4 py-2.5 text-right font-semibold text-red-600 dark:text-red-400">
+                      -{formatCurrency(expenses.reduce((s, e) => s + parseFloat(e.amount), 0))}
+                    </td>
+                    <td />
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {addExpenseOpen && (
+        <AddExpenseModal
+          onClose={() => setAddExpenseOpen(false)}
+          onSaved={loadData}
+        />
+      )}
+    </div>
+  );
+}
