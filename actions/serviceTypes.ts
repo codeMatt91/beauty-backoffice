@@ -9,6 +9,13 @@ import { ActionResult, zodErrorToMessage } from "@/lib/actionResult";
 const serviceTypeSchema = z.object({
   name: z.string().min(2, "Il nome è obbligatorio (min. 2 caratteri).").max(50, "Il nome è troppo lungo."),
   defaultPrice: z.coerce.number().nonnegative("Il prezzo non può essere negativo."),
+  durationMinutes: z.coerce
+    .number()
+    .int("La durata deve essere un numero intero di minuti.")
+    .min(1, "La durata deve essere di almeno 1 minuto.")
+    .max(1440, "La durata non può superare i 1440 minuti (24 ore).")
+    .nullable()
+    .optional(),
 });
 
 export async function getServiceTypes() {

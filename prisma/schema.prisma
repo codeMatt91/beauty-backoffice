@@ -82,10 +82,11 @@ model Customer {
 }
 
 model ServiceType {
-  id           String   @id @default(cuid())
-  name         String   @unique
-  defaultPrice Decimal  @default(0) @db.Decimal(10, 2) @map("default_price")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id              String   @id @default(cuid())
+  name            String   @unique
+  defaultPrice    Decimal  @default(0) @db.Decimal(10, 2) @map("default_price")
+  durationMinutes Int?     @map("duration_minutes")
+  createdAt       DateTime @default(now()) @map("created_at")
 
   @@map("service_types")
 }

@@ -8,10 +8,15 @@ interface ServiceType {
   id: string;
   name: string;
   defaultPrice: string;
+  durationMinutes: number | null;
 }
 
 function formatPrice(price: string) {
   return `€ ${Number(price).toFixed(2)}`;
+}
+
+function formatDuration(minutes: number | null) {
+  return minutes != null ? `${minutes} min` : "—";
 }
 
 interface Props {
@@ -71,6 +76,9 @@ export default function ServiceTypeList({ serviceTypes, onEdit, onRefresh }: Pro
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Prezzo
               </th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                Durata
+              </th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -79,6 +87,7 @@ export default function ServiceTypeList({ serviceTypes, onEdit, onRefresh }: Pro
               <tr key={s.id} className="hover:bg-secondary/30 transition-colors">
                 <td className="px-4 py-3 font-medium">{s.name}</td>
                 <td className="px-4 py-3 text-muted-foreground">{formatPrice(s.defaultPrice)}</td>
+                <td className="px-4 py-3 text-muted-foreground">{formatDuration(s.durationMinutes)}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1 justify-end">
                     <button
@@ -116,7 +125,9 @@ export default function ServiceTypeList({ serviceTypes, onEdit, onRefresh }: Pro
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-foreground">{s.name}</p>
-                <p className="text-sm text-muted-foreground">{formatPrice(s.defaultPrice)}</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatPrice(s.defaultPrice)} · {formatDuration(s.durationMinutes)}
+                </p>
               </div>
               <div className="flex gap-1">
                 <button

@@ -10,6 +10,7 @@ interface ServiceType {
   id: string;
   name: string;
   defaultPrice: string;
+  durationMinutes: number | null;
 }
 
 interface Props {

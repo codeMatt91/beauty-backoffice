@@ -9,6 +9,7 @@ interface ServiceType {
   id: string;
   name: string;
   defaultPrice: string;
+  durationMinutes: number | null;
 }
 
 interface Props {
@@ -23,12 +24,14 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [defaultPrice, setDefaultPrice] = useState("");
+  const [durationMinutes, setDurationMinutes] = useState("");
 
   useEffect(() => {
     if (!open) return;
     setError(null);
     setName(serviceType?.name ?? "");
     setDefaultPrice(serviceType?.defaultPrice ?? "");
+    setDurationMinutes(serviceType?.durationMinutes != null ? String(serviceType.durationMinutes) : "");
   }, [open, serviceType]);
 
   if (!open) return null;
@@ -39,9 +42,10 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
     setError(null);
 
     try {
+      const durationValue = durationMinutes.trim() === "" ? null : Number(durationMinutes);
       const result = serviceType
-        ? await updateServiceType(serviceType.id, { name, defaultPrice: parseFloat(defaultPrice) })
-        : await createServiceType({ name, defaultPrice: parseFloat(defaultPrice) });
+        ? await updateServiceType(serviceType.id, { name, defaultPrice: parseFloat(defaultPrice), durationMinutes: durationValue })
+        : await createServiceType({ name, defaultPrice: parseFloat(defaultPrice), durationMinutes: durationValue });
       if (!result.success) {
         setError(result.error);
         return;
@@ -95,6 +99,21 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
                 onChange={(e) => setDefaultPrice(e.target.value)}
                 required
                 placeholder="Es. 25.00"
+                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium" htmlFor="serviceTypeDuration">Durata (minuti)</label>
+              <input
+                id="serviceTypeDuration"
+                type="number"
+                min="1"
+                max="1440"
+                step="1"
+                value={durationMinutes}
+                onChange={(e) => setDurationMinutes(e.target.value)}
+                placeholder="Es. 30"
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>

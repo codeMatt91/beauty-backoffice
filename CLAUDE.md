@@ -88,7 +88,7 @@ The root dashboard route (`/`) immediately redirects to `/calendar`.
 | `/customers` | All | Client | Customer registry — `CustomerTable` + `CustomerForm` modal for create/edit via `actions/customers.ts` |
 | `/employees` | ADMIN | Client | User account management — inline `UserModal` for create/edit/delete via `actions/users.ts` |
 | `/finance` | ADMIN | Client | Financial dashboard — date-range + service + granularity filters, KPI cards, Recharts chart (`FinancialChart`), expenses table with add/delete via `actions/expenses.ts` |
-| `/settings` | ADMIN | Client | Data purge (calls `POST /api/purge`, auto-downloads the ZIP response) |
+| `/settings` | ADMIN | **Server → Client** | Tipologie di Prestazioni CRUD (`ServiceTypeList`/`ServiceTypeForm` via `actions/serviceTypes.ts`, server-rendered initial data) and Data purge (calls `POST /api/purge`, auto-downloads the ZIP response) |
 
 **Key pattern — calendar page data flow:** `CalendarPage` (Server Component) queries Prisma directly and passes serialized props to `CalendarClient` (Client Component). `Decimal` fields must always be `.toString()`-ed before crossing the server/client boundary.
 
@@ -110,6 +110,7 @@ All data mutations are Next.js Server Actions in `actions/`. Each action calls `
 |---|---|
 | `User` | Staff accounts with `ADMIN` / `EMPLOYEE` role |
 | `Customer` | Client registry |
+| `ServiceType` | Catalog of bookable service types with default price and optional duration in minutes |
 | `Appointment` | Booking linking customer + optional employee |
 | `MonthlyExpense` | Operating expenses by `ExpenseCategory` |
 | `PurgeArchive` | Audit log of data-purge operations |
