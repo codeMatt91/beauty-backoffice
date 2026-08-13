@@ -16,6 +16,9 @@ const serviceTypeSchema = z.object({
     .max(1440, "La durata non può superare i 1440 minuti (24 ore).")
     .nullable()
     .optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, "Il colore deve essere in formato esadecimale (#RRGGBB)."),
 });
 
 export async function getServiceTypes() {

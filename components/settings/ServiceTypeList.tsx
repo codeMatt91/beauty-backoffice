@@ -9,6 +9,7 @@ interface ServiceType {
   name: string;
   defaultPrice: string;
   durationMinutes: number | null;
+  color: string;
 }
 
 function formatPrice(price: string) {

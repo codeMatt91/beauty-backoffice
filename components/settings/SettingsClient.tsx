@@ -11,6 +11,7 @@ interface ServiceType {
   name: string;
   defaultPrice: string;
   durationMinutes: number | null;
+  color: string;
 }
 
 interface Props {

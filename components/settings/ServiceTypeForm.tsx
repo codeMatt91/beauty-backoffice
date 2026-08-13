@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createServiceType, updateServiceType } from "@/actions/serviceTypes";
+import { DEFAULT_SERVICE_COLOR } from "@/lib/colors";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
@@ -10,6 +11,7 @@ interface ServiceType {
   name: string;
   defaultPrice: string;
   durationMinutes: number | null;
+  color: string;
 }
 
 interface Props {
@@ -25,6 +27,7 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
   const [name, setName] = useState("");
   const [defaultPrice, setDefaultPrice] = useState("");
   const [durationMinutes, setDurationMinutes] = useState("");
+  const [color, setColor] = useState(DEFAULT_SERVICE_COLOR);
 
   useEffect(() => {
     if (!open) return;
@@ -32,6 +35,7 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
     setName(serviceType?.name ?? "");
     setDefaultPrice(serviceType?.defaultPrice ?? "");
     setDurationMinutes(serviceType?.durationMinutes != null ? String(serviceType.durationMinutes) : "");
+    setColor(serviceType?.color ?? DEFAULT_SERVICE_COLOR);
   }, [open, serviceType]);
 
   if (!open) return null;
@@ -44,8 +48,8 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
     try {
       const durationValue = durationMinutes.trim() === "" ? null : Number(durationMinutes);
       const result = serviceType
-        ? await updateServiceType(serviceType.id, { name, defaultPrice: parseFloat(defaultPrice), durationMinutes: durationValue })
-        : await createServiceType({ name, defaultPrice: parseFloat(defaultPrice), durationMinutes: durationValue });
+        ? await updateServiceType(serviceType.id, { name, defaultPrice: parseFloat(defaultPrice), durationMinutes: durationValue, color })
+        : await createServiceType({ name, defaultPrice: parseFloat(defaultPrice), durationMinutes: durationValue, color });
       if (!result.success) {
         setError(result.error);
         return;
