@@ -211,6 +211,7 @@ export default function SettingsClient({ initialServiceTypes }: Props) {
         open={formOpen}
         onClose={() => setFormOpen(false)}
         serviceType={editingServiceType}
+        existingServiceTypes={serviceTypes}
         onSaved={loadServiceTypes}
       />
     </div>

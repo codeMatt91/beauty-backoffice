@@ -18,10 +18,11 @@ interface Props {
   open: boolean;
   onClose: () => void;
   serviceType?: ServiceType | null;
+  existingServiceTypes: ServiceType[];
   onSaved: () => void;
 }
 
-export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }: Props) {
+export default function ServiceTypeForm({ open, onClose, serviceType, existingServiceTypes, onSaved }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -39,6 +40,10 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
   }, [open, serviceType]);
 
   if (!open) return null;
+
+  const duplicateColorName = existingServiceTypes.find(
+    (s) => s.id !== serviceType?.id && s.color.toLowerCase() === color.toLowerCase()
+  )?.name;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -120,6 +125,36 @@ export default function ServiceTypeForm({ open, onClose, serviceType, onSaved }:
                 placeholder="Es. 30"
                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium" htmlFor="serviceTypeColor">Colore</label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="serviceTypeColor"
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className="h-9 w-12 rounded-lg border border-input bg-background cursor-pointer p-1"
+                  aria-label="Selettore colore prestazione"
+                />
+                <input
+                  type="text"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  required
+                  pattern="^#[0-9A-Fa-f]{6}$"
+                  placeholder="#CCCCCC"
+                  className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  aria-label="Codice colore esadecimale"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Colore identificativo della prestazione, mostrato in calendario.</p>
+              {duplicateColorName && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  Colore già usato da &quot;{duplicateColorName}&quot;. Puoi salvare comunque, ma sarà meno distinguibile in calendario.
+                </p>
+              )}
             </div>
 
             {error && (

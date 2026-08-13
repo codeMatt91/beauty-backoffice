@@ -86,7 +86,16 @@ export default function ServiceTypeList({ serviceTypes, onEdit, onRefresh }: Pro
           <tbody className="divide-y divide-border">
             {filtered.map((s) => (
               <tr key={s.id} className="hover:bg-secondary/30 transition-colors">
-                <td className="px-4 py-3 font-medium">{s.name}</td>
+                <td className="px-4 py-3 font-medium">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full border border-border shrink-0"
+                      style={{ backgroundColor: s.color }}
+                      aria-hidden="true"
+                    />
+                    {s.name}
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-muted-foreground">{formatPrice(s.defaultPrice)}</td>
                 <td className="px-4 py-3 text-muted-foreground">{formatDuration(s.durationMinutes)}</td>
                 <td className="px-4 py-3">
@@ -125,7 +134,14 @@ export default function ServiceTypeList({ serviceTypes, onEdit, onRefresh }: Pro
           <div key={s.id} className="bg-card rounded-xl border border-border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-foreground">{s.name}</p>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-3 h-3 rounded-full border border-border shrink-0"
+                    style={{ backgroundColor: s.color }}
+                    aria-hidden="true"
+                  />
+                  <p className="font-medium text-foreground">{s.name}</p>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   {formatPrice(s.defaultPrice)} · {formatDuration(s.durationMinutes)}
                 </p>
