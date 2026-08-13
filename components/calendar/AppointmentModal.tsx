@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
+import { addMinutes, format } from "date-fns";
 import { createAppointment, updateAppointment, deleteAppointment } from "@/actions/appointments";
 import { getCustomers } from "@/actions/customers";
 import { getServiceTypes } from "@/actions/serviceTypes";
@@ -50,6 +50,10 @@ const PAYMENT_OPTIONS: { value: PaymentStatus; label: string }[] = [
   { value: "OPTIONAL", label: "Opzionale" },
 ];
 
+function calculateEndTime(startTimeLocal: string, durationMinutes: number): string {
+  return format(addMinutes(new Date(startTimeLocal), durationMinutes), "yyyy-MM-dd'T'HH:mm");
+}
+
 export default function AppointmentModal({ open, onClose, appointment, defaultDate, employees, onSaved }: Props) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,7 +62,9 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
   const [customerId, setCustomerId] = useState("");
   const [employeeId, setEmployeeId] = useState("");
   const [serviceType, setServiceType] = useState("");
-  const [serviceTypes, setServiceTypes] = useState<{ id: string; name: string; defaultPrice: string }[]>([]);
+  const [serviceTypes, setServiceTypes] = useState<
+    { id: string; name: string; defaultPrice: string; durationMinutes: number | null }[]
+  >([]);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [price, setPrice] = useState("0");
@@ -97,6 +103,17 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
     setServiceType(name);
     const found = serviceTypes.find((s) => s.name === name);
     if (found) setPrice(found.defaultPrice);
+    if (found?.durationMinutes != null && startTime) {
+      setEndTime(calculateEndTime(startTime, found.durationMinutes));
+    }
+  }
+
+  function handleStartTimeChange(value: string) {
+    setStartTime(value);
+    const found = serviceTypes.find((s) => s.name === serviceType);
+    if (found?.durationMinutes != null) {
+      setEndTime(calculateEndTime(value, found.durationMinutes));
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -216,7 +233,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
                 <input
                   type="datetime-local"
                   value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
+                  onChange={(e) => handleStartTimeChange(e.target.value)}
                   required
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
