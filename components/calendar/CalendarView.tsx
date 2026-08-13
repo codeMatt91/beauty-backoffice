@@ -15,6 +15,7 @@ import {
 import { it } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, CalendarDays, Grid3x3, Calendar } from "lucide-react";
 import { cn, formatTime, formatCurrency } from "@/lib/utils";
+import { DEFAULT_SERVICE_COLOR, getContrastingTextColor } from "@/lib/colors";
 import AppointmentModal from "./AppointmentModal";
 import { useState } from "react";
 import { PaymentStatus } from "@prisma/client";
@@ -39,11 +40,18 @@ interface Employee {
   lastName: string;
 }
 
+interface ServiceType {
+  id: string;
+  name: string;
+  color: string;
+}
+
 type ViewMode = "month" | "week" | "day";
 
 interface Props {
   appointments: Appointment[];
   employees: Employee[];
+  serviceTypes: ServiceType[];
   currentDate: Date;
   view: ViewMode;
   isPending?: boolean;
@@ -53,15 +61,10 @@ interface Props {
   onRefresh: () => void;
 }
 
-const STATUS_COLORS: Record<PaymentStatus, string> = {
-  PAID: "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900",
-  PENDING: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900",
-  OPTIONAL: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700",
-};
-
 export default function CalendarView({
   appointments,
   employees,
+  serviceTypes,
   currentDate,
   view,
   isPending,
@@ -90,6 +93,12 @@ export default function CalendarView({
     (date: Date) =>
       appointments.filter((a) => isSameDay(new Date(a.startTime), date)),
     [appointments]
+  );
+
+  const getServiceColor = useCallback(
+    (serviceTypeName: string) =>
+      serviceTypes.find((s) => s.name === serviceTypeName)?.color ?? DEFAULT_SERVICE_COLOR,
+    [serviceTypes]
   );
 
   // ─── Month View ─────────────────────────────────────────────────────────────
@@ -142,18 +151,19 @@ export default function CalendarView({
                   {format(d, "d")}
                 </span>
                 <div className="mt-1 space-y-0.5">
-                  {dayApts.slice(0, 3).map((a) => (
-                    <div
-                      key={a.id}
-                      onClick={(e) => { e.stopPropagation(); openEdit(a); }}
-                      className={cn(
-                        "appointment-block border",
-                        STATUS_COLORS[a.paymentStatus]
-                      )}
-                    >
-                      {formatTime(a.startTime)} {a.customer.lastName}
-                    </div>
-                  ))}
+                  {dayApts.slice(0, 3).map((a) => {
+                    const bg = getServiceColor(a.serviceType);
+                    return (
+                      <div
+                        key={a.id}
+                        onClick={(e) => { e.stopPropagation(); openEdit(a); }}
+                        className="appointment-block border"
+                        style={{ backgroundColor: bg, borderColor: bg, color: getContrastingTextColor(bg) }}
+                      >
+                        {formatTime(a.startTime)} {a.customer.lastName}
+                      </div>
+                    );
+                  })}
                   {dayApts.length > 3 && (
                     <div className="text-[10px] text-muted-foreground px-1">
                       +{dayApts.length - 3} altri
@@ -218,18 +228,19 @@ export default function CalendarView({
                     isToday(d) && "bg-accent/10"
                   )}
                 >
-                  {slotApts.map((a) => (
-                    <div
-                      key={a.id}
-                      onClick={(e) => { e.stopPropagation(); openEdit(a); }}
-                      className={cn(
-                        "appointment-block border mb-0.5",
-                        STATUS_COLORS[a.paymentStatus]
-                      )}
-                    >
-                      {a.customer.lastName} – {a.serviceType}
-                    </div>
-                  ))}
+                  {slotApts.map((a) => {
+                    const bg = getServiceColor(a.serviceType);
+                    return (
+                      <div
+                        key={a.id}
+                        onClick={(e) => { e.stopPropagation(); openEdit(a); }}
+                        className="appointment-block border mb-0.5"
+                        style={{ backgroundColor: bg, borderColor: bg, color: getContrastingTextColor(bg) }}
+                      >
+                        {a.customer.lastName} – {a.serviceType}
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
@@ -262,19 +273,20 @@ export default function CalendarView({
                 }}
                 className="p-1 hover:bg-secondary/30 cursor-pointer transition-colors"
               >
-                {slotApts.map((a) => (
-                  <div
-                    key={a.id}
-                    onClick={(e) => { e.stopPropagation(); openEdit(a); }}
-                    className={cn(
-                      "appointment-block border mb-0.5",
-                      STATUS_COLORS[a.paymentStatus]
-                    )}
-                  >
-                    {formatTime(a.startTime)} {a.customer.lastName} – {a.serviceType}
-                    {a.employee && ` (${a.employee.firstName} ${a.employee.lastName})`} · {formatCurrency(a.price)}
-                  </div>
-                ))}
+                {slotApts.map((a) => {
+                  const bg = getServiceColor(a.serviceType);
+                  return (
+                    <div
+                      key={a.id}
+                      onClick={(e) => { e.stopPropagation(); openEdit(a); }}
+                      className="appointment-block border mb-0.5"
+                      style={{ backgroundColor: bg, borderColor: bg, color: getContrastingTextColor(bg) }}
+                    >
+                      {formatTime(a.startTime)} {a.customer.lastName} – {a.serviceType}
+                      {a.employee && ` (${a.employee.firstName} ${a.employee.lastName})`} · {formatCurrency(a.price)}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
@@ -368,10 +380,14 @@ export default function CalendarView({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 px-4 py-1.5 border-b border-border bg-card text-[11px]">
-        {Object.entries(STATUS_COLORS).map(([status, cls]) => (
-          <span key={status} className={cn("px-2 py-0.5 rounded border font-medium", cls)}>
-            {status === "PAID" ? "Pagato" : status === "PENDING" ? "Da pagare" : "Opzionale"}
+      <div className="flex items-center gap-2 overflow-x-auto overscroll-x-contain snap-x snap-proximity no-scrollbar px-4 py-1.5 border-b border-border bg-card text-[11px]">
+        {serviceTypes.map((s) => (
+          <span
+            key={s.id}
+            className="shrink-0 snap-start px-2 py-0.5 rounded border font-medium"
+            style={{ backgroundColor: s.color, borderColor: s.color, color: getContrastingTextColor(s.color) }}
+          >
+            {s.name}
           </span>
         ))}
       </div>

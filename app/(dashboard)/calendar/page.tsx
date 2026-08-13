@@ -7,7 +7,7 @@ export default async function CalendarPage() {
   const from = startOfMonth(now);
   const to = endOfMonth(now);
 
-  const [appointments, employees] = await Promise.all([
+  const [appointments, employees, serviceTypes] = await Promise.all([
     prisma.appointment.findMany({
       where: { startTime: { gte: from, lte: to } },
       include: {
@@ -19,6 +19,10 @@ export default async function CalendarPage() {
     prisma.user.findMany({
       select: { id: true, firstName: true, lastName: true },
       orderBy: { firstName: "asc" },
+    }),
+    prisma.serviceType.findMany({
+      select: { id: true, name: true, color: true },
+      orderBy: { name: "asc" },
     }),
   ]);
 
@@ -32,6 +36,7 @@ export default async function CalendarPage() {
       <CalendarClient
         initialAppointments={JSON.parse(JSON.stringify(serializedAppointments))}
         employees={JSON.parse(JSON.stringify(employees))}
+        serviceTypes={JSON.parse(JSON.stringify(serviceTypes))}
       />
     </div>
   );

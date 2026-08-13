@@ -33,9 +33,10 @@ interface Appointment {
 interface Props {
   initialAppointments: Appointment[];
   employees: { id: string; firstName: string; lastName: string }[];
+  serviceTypes: { id: string; name: string; color: string }[];
 }
 
-export default function CalendarClient({ initialAppointments, employees }: Props) {
+export default function CalendarClient({ initialAppointments, employees, serviceTypes }: Props) {
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -82,6 +83,7 @@ export default function CalendarClient({ initialAppointments, employees }: Props
       <CalendarView
         appointments={appointments}
         employees={employees}
+        serviceTypes={serviceTypes}
         currentDate={currentDate}
         view={view}
         isPending={isPending}

@@ -62,3 +62,11 @@
 .appointment-block {
   @apply rounded-md px-2 py-1 text-xs font-medium truncate cursor-pointer transition-opacity hover:opacity-80;
 }
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
