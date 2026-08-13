@@ -111,7 +111,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
   function handleStartTimeChange(value: string) {
     setStartTime(value);
     const found = serviceTypes.find((s) => s.name === serviceType);
-    if (found?.durationMinutes != null) {
+    if (found?.durationMinutes != null && value) {
       setEndTime(calculateEndTime(value, found.durationMinutes));
     }
   }
