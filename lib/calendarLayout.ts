@@ -15,8 +15,11 @@ export const FOCUS_Z_INDEX = 1000;
 
 export interface DayViewLayoutInput {
   id: string;
-  startTime: Date;
-  endTime: Date;
+  // Prisma `DateTime` fields become ISO strings once they cross the
+  // server/client boundary via JSON.parse(JSON.stringify(...)) — accept both
+  // so this function is safe regardless of where its input came from.
+  startTime: Date | string;
+  endTime: Date | string;
 }
 
 export interface DayViewBlockLayout {
@@ -69,10 +72,11 @@ export function computeDayViewLayout<T extends DayViewLayoutInput>(
   const gridEndMin = (endHour - startHour) * 60;
   const dayStartMs = startHour * 60 * 60 * 1000;
 
-  const minutesSinceGridStart = (d: Date) => {
-    const localMidnight = new Date(d);
+  const minutesSinceGridStart = (d: Date | string) => {
+    const date = d instanceof Date ? d : new Date(d);
+    const localMidnight = new Date(date);
     localMidnight.setHours(0, 0, 0, 0);
-    return (d.getTime() - localMidnight.getTime() - dayStartMs) / 60000;
+    return (date.getTime() - localMidnight.getTime() - dayStartMs) / 60000;
   };
 
   // 1. Clamp into the visible window, drop anything with zero overlap with it.
