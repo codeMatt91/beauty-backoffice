@@ -23,7 +23,7 @@ interface DataPoint {
 
 interface Props {
   data: DataPoint[];
-  granularity: "day" | "month";
+  granularity: "day" | "month" | "year";
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {

@@ -34,7 +34,7 @@ interface ExpenseRecord {
   date: string;
 }
 
-type Granularity = "day" | "month";
+type Granularity = "day" | "month" | "year";
 
 // ─── Main Client Component ─────────────────────────────────────────────────────
 
@@ -61,7 +61,6 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
   const [exportingMonth, setExportingMonth] = useState(false);
   const [exportingYear, setExportingYear] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
-  const [activePreset, setActivePreset] = useState<"month" | "year" | null>(null);
   const [isFirstRender, setIsFirstRender] = useState(true);
 
   async function loadData() {
@@ -129,31 +128,6 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
   const totaleUscite = chartData.reduce((s, d) => s + d.uscite, 0);
   const profittoNetto = totaleEntrate - totaleUscite;
 
-  // ── Quick date presets ──────────────────────────────────────────────────────
-
-  const presets: { label: string; id: "month" | "year"; fn: () => void }[] = [
-    {
-      label: "Questo mese",
-      id: "month",
-      fn: () => {
-        setDateFrom(format(startOfMonth(new Date()), "yyyy-MM-dd"));
-        setDateTo(format(endOfMonth(new Date()), "yyyy-MM-dd"));
-        setGranularity("day");
-        setActivePreset("month");
-      },
-    },
-    {
-      label: "Quest'anno",
-      id: "year",
-      fn: () => {
-        setDateFrom(format(startOfYear(new Date()), "yyyy-MM-dd"));
-        setDateTo(format(endOfYear(new Date()), "yyyy-MM-dd"));
-        setGranularity("month");
-        setActivePreset("year");
-      },
-    },
-  ];
-
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-auto p-4 lg:p-6 space-y-5">
@@ -170,14 +144,14 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
               <input
                 type="date"
                 value={dateFrom}
-                onChange={(e) => { setDateFrom(e.target.value); setActivePreset(null); }}
+                onChange={(e) => setDateFrom(e.target.value)}
                 className="w-full min-w-0 sm:w-auto px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <span className="hidden sm:inline text-muted-foreground text-sm">→</span>
               <input
                 type="date"
                 value={dateTo}
-                onChange={(e) => { setDateTo(e.target.value); setActivePreset(null); }}
+                onChange={(e) => setDateTo(e.target.value)}
                 className="w-full min-w-0 sm:w-auto px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -194,7 +168,11 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
 
             <div className="flex items-center rounded-lg border border-border overflow-hidden w-full lg:w-auto">
               <button
-                onClick={() => setGranularity("day")}
+                onClick={() => {
+                  setGranularity("day");
+                  setDateFrom(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+                  setDateTo(format(endOfMonth(new Date()), "yyyy-MM-dd"));
+                }}
                 className={`flex-1 lg:flex-none px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "day" ? "bg-primary text-white" : "hover:bg-secondary"}`}
               >
                 Giornaliero
@@ -205,25 +183,19 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
               >
                 Mensile
               </button>
+              <button
+                onClick={() => {
+                  setGranularity("year");
+                  setDateFrom(format(startOfYear(new Date()), "yyyy-MM-dd"));
+                  setDateTo(format(endOfYear(new Date()), "yyyy-MM-dd"));
+                }}
+                className={`flex-1 lg:flex-none px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "year" ? "bg-primary text-white" : "hover:bg-secondary"}`}
+              >
+                Annuale
+              </button>
             </div>
 
             <div className="grid grid-cols-2 gap-2 lg:flex lg:gap-3">
-              {presets.map((p) => (
-                <button
-                  key={p.label}
-                  onClick={p.fn}
-                  className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${
-                    activePreset === p.id
-                      ? "bg-primary text-white border-primary"
-                      : "border-border hover:bg-secondary"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 border-t border-border pt-1 lg:border-t-0 lg:pt-0 lg:flex lg:gap-3">
               <button
                 onClick={async () => {
                   setExportError(null);
@@ -297,7 +269,7 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
           <h3 className="font-semibold text-foreground mb-4">
             Entrate vs Uscite
             <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({granularity === "day" ? "giornaliero" : "mensile"})
+              ({granularity === "day" ? "giornaliero" : granularity === "month" ? "mensile" : "annuale"})
             </span>
           </h3>
           {loading ? (
