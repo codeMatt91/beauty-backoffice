@@ -126,8 +126,8 @@ export default function SettingsClient({ initialServiceTypes }: Props) {
           </div>
         </div>
 
-        {/* ── Data Purge ── */}
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
+        {/* ── Data Purge (desktop only) ── */}
+        <div className="hidden lg:block bg-card rounded-xl border border-border overflow-hidden">
           <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-amber-50 border-amber-100 dark:bg-amber-950/40 dark:border-amber-900">
             <Archive className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             <div>
