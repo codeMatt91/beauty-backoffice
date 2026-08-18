@@ -12,6 +12,16 @@ const nextConfig: NextConfig = {
     // for local/CI feedback; this only affects `next build`.
     ignoreDuringBuilds: true,
   },
+  async headers() {
+    return [
+      {
+        source: "/la-femme-logo.svg",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+    ];
+  },
   // Vercel Cron Jobs configuration
   // Definito in vercel.json – qui solo per documentazione
 };

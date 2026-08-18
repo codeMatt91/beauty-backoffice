@@ -11,7 +11,7 @@ interface Customer {
   lastName: string;
   phoneNumber: string | null;
   email: string | null;
-  age: number | null;
+  birthDate: string | null;
   notes: string | null;
 }
 
@@ -29,7 +29,7 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
-  const [age, setAge] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
     setLastName(customer?.lastName ?? "");
     setPhoneNumber(customer?.phoneNumber ?? "");
     setEmail(customer?.email ?? "");
-    setAge(customer?.age?.toString() ?? "");
+    setBirthDate(customer?.birthDate?.slice(0, 10) ?? "");
     setNotes(customer?.notes ?? "");
   }, [open, customer]);
 
@@ -55,7 +55,7 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
       lastName,
       phoneNumber: phoneNumber || null,
       email: email || null,
-      age: age ? parseInt(age) : null,
+      birthDate: birthDate ? new Date(birthDate) : null,
       notes: notes || null,
     };
 
@@ -126,13 +126,12 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Età</label>
+                <label className="text-sm font-medium">Data di nascita</label>
                 <input
-                  type="number"
-                  min="1"
-                  max="120"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
+                  type="date"
+                  value={birthDate}
+                  max={new Date().toISOString().slice(0, 10)}
+                  onChange={(e) => setBirthDate(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>

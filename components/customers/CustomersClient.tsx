@@ -12,7 +12,7 @@ interface CustomerRecord {
   lastName: string;
   email: string | null;
   phoneNumber: string | null;
-  age: number | null;
+  birthDate: string | null;
   notes: string | null;
   createdAt: string;
   _count: { appointments: number };

@@ -11,6 +11,8 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding database...");
 
+  const today = new Date();
+
   // ── Admin ──────────────────────────────────────────────────────────────────
   const adminHash = await bcrypt.hash("admin1234", 12);
   const admin = await prisma.user.upsert({
@@ -51,7 +53,7 @@ async function main() {
         firstName: "Giulia",
         lastName: "Bianchi",
         phoneNumber: "+39 333 1234567",
-        age: 32,
+        birthDate: new Date(today.getFullYear() - 32, 4, 12),
         notes: "Allergia alla cera tiepida",
       },
     }),
@@ -63,7 +65,7 @@ async function main() {
         firstName: "Marta",
         lastName: "Verdi",
         phoneNumber: "+39 347 7654321",
-        age: 45,
+        birthDate: new Date(today.getFullYear() - 45, 8, 3),
       },
     }),
     prisma.customer.upsert({
@@ -74,7 +76,7 @@ async function main() {
         firstName: "Elena",
         lastName: "Ferrari",
         phoneNumber: "+39 320 9876543",
-        age: 28,
+        birthDate: new Date(today.getFullYear() - 28, 10, 21),
         notes: "Cliente VIP",
       },
     }),
@@ -82,7 +84,6 @@ async function main() {
   console.log("✅ Clienti:", customers.length);
 
   // ── Appuntamenti demo ──────────────────────────────────────────────────────
-  const today = new Date();
   const appointments = [
     {
       customerId: "cust-001",

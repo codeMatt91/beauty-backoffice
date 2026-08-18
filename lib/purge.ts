@@ -39,7 +39,7 @@ export async function runPurge(olderThanMonths: number): Promise<PurgeResult> {
           firstName: true,
           lastName: true,
           phoneNumber: true,
-          age: true,
+          birthDate: true,
           notes: true,
         },
       },

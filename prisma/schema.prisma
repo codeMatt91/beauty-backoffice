@@ -72,7 +72,7 @@ model Customer {
   lastName    String   @map("last_name")
   phoneNumber String?  @map("phone_number")
   email       String?  @map("email")
-  age         Int?
+  birthDate   DateTime? @db.Date @map("birth_date")
   notes       String?
   createdAt   DateTime @default(now()) @map("created_at")
 

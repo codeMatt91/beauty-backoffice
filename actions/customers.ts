@@ -11,10 +11,9 @@ const customerSchema = z.object({
   lastName: z.string().min(2, "Il cognome è obbligatorio (min. 2 caratteri).").max(50, "Il cognome è troppo lungo."),
   phoneNumber: z.string().optional().nullable(),
   email: z.string().email("Inserisci un indirizzo email valido.").nullable().optional(),
-  age: z.coerce
-    .number({ invalid_type_error: "L'età deve essere un numero." })
-    .min(1, "L'età inserita non è valida.")
-    .max(120, "L'età inserita non è valida.")
+  birthDate: z.coerce
+    .date({ invalid_type_error: "La data di nascita non è valida." })
+    .max(new Date(), "La data di nascita non può essere nel futuro.")
     .optional()
     .nullable(),
   notes: z.string().max(500, "Le note sono troppo lunghe (max 500 caratteri).").optional().nullable(),

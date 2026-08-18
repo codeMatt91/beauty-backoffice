@@ -19,7 +19,7 @@ interface Customer {
   lastName: string;
   email: string | null;
   phoneNumber: string | null;
-  age: number | null;
+  birthDate: string | null;
   notes: string | null;
   createdAt: string; // ISO string — Prisma DateTime serialized for the client
   _count: { appointments: number };
@@ -101,7 +101,7 @@ export default function CustomerTable({
                 Email
               </th>
               {/* <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                Età
+                Data di nascita
               </th> */}
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Appuntamenti
@@ -143,7 +143,7 @@ export default function CustomerTable({
                   {c.email}
                 </td>
                 {/* <td className="px-4 py-3 text-muted-foreground">
-                  {c.age ?? "—"}
+                  {c.birthDate ? formatDate(c.birthDate) : "—"}
                 </td> */}
                 <td className="px-4 py-3">
                   <span className="inline-flex items-center gap-1 text-xs font-medium bg-primary/10 text-primary rounded-full px-2 py-0.5">
@@ -238,7 +238,7 @@ export default function CustomerTable({
                 {c._count.appointments}{" "}
                 appuntamenti
               </span>
-              {c.age && <span>Età: {c.age}</span>}
+              {c.birthDate && <span>Nato/a il {formatDate(c.birthDate)}</span>}
             </div>
           </div>
         ))}

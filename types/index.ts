@@ -39,7 +39,7 @@ export interface CustomerWithStats {
   firstName: string;
   lastName: string;
   phoneNumber: string | null;
-  age: number | null;
+  birthDate: Date | null;
   notes: string | null;
   createdAt: Date;
   _count: { appointments: number };
