@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { CalendarDays, Users, TrendingUp, UserCog, Settings } from "lucide-react";
+import { useNavigation } from "./NavigationProvider";
 
 interface MobileNavProps {
   role: string;
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
 
 export default function MobileNav({ role }: MobileNavProps) {
   const pathname = usePathname();
+  const { navigate } = useNavigation();
   const isAdmin = role === "ADMIN";
 
   const items = NAV_ITEMS.filter((i) => !i.adminOnly || isAdmin);
@@ -33,6 +35,11 @@ export default function MobileNav({ role }: MobileNavProps) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={(e) => {
+                if (pathname === item.href) return;
+                e.preventDefault();
+                navigate(item.href);
+              }}
               className={cn(
                 "flex-1 flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors",
                 active ? "text-primary" : "text-muted-foreground"

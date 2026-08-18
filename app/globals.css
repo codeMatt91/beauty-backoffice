@@ -70,3 +70,19 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Navigation loader: watermark logo filling top-to-bottom */
+@keyframes logo-fill-sweep {
+  0% {
+    clip-path: inset(0 0 100% 0);
+  }
+  50% {
+    clip-path: inset(0 0 0% 0);
+  }
+  100% {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+.animate-logo-fill-sweep {
+  animation: logo-fill-sweep 1.6s ease-in-out infinite;
+}

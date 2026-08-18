@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { useNavigation } from "./NavigationProvider";
 import {
   CalendarDays,
   Users,
@@ -62,6 +63,7 @@ export default function Sidebar({
   userName,
 }: SidebarProps) {
   const pathname = usePathname();
+  const { navigate } = useNavigation();
   const isAdmin = role === "ADMIN";
 
   const visibleItems = NAV_ITEMS.filter(
@@ -91,6 +93,11 @@ export default function Sidebar({
             <Link
               key={item.href}
               href={item.href}
+              onClick={(e) => {
+                if (pathname === item.href) return;
+                e.preventDefault();
+                navigate(item.href);
+              }}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 active
