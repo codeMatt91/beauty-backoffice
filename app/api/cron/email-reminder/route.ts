@@ -10,11 +10,44 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendAppointmentReminderEmail } from "@/lib/mailer";
 import { logReminderNotification } from "@/lib/notifications";
-import { format, addDays, startOfDay, endOfDay } from "date-fns";
-import { it } from "date-fns/locale";
+import { addDays, startOfDay, endOfDay } from "date-fns";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Il processo Node su Vercel gira in UTC: qualunque formattazione va
+// ancorata esplicitamente a Europe/Rome, altrimenti l'orario nell'email
+// risulta sfasato di 1h (CET) o 2h (CEST) rispetto a quello mostrato in app.
+const ROME_TZ = "Europe/Rome";
+
+function formatDateItRome(date: Date): string {
+  return new Intl.DateTimeFormat("it-IT", {
+    timeZone: ROME_TZ,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatTimeItRome(date: Date): string {
+  return new Intl.DateTimeFormat("it-IT", {
+    timeZone: ROME_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+function formatIsoDateRome(date: Date): string {
+  // locale en-CA produce direttamente il formato YYYY-MM-DD
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: ROME_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
 
 interface ReminderResult {
   customerId: string;
@@ -92,8 +125,8 @@ export async function POST(req: NextRequest) {
     const sendResult = await sendAppointmentReminderEmail({
       to: customer.email,
       customerName: customer.firstName,
-      date: format(apt.startTime, "EEEE d MMMM yyyy", { locale: it }),
-      time: format(apt.startTime, "HH:mm"),
+      date: formatDateItRome(apt.startTime),
+      time: formatTimeItRome(apt.startTime),
       service: apt.serviceType,
     });
 
@@ -124,7 +157,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     message: "Cron completato",
-    date: format(tomorrow, "yyyy-MM-dd"),
+    date: formatIsoDateRome(tomorrow),
     total: appointments.length,
     sent,
     failed,
