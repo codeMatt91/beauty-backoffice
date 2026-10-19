@@ -68,7 +68,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [price, setPrice] = useState("0");
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("PENDING");
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("PAID");
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -93,7 +93,7 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
         : format(defaultDate ?? new Date(), "yyyy-MM-dd'T'10:00")
     );
     setPrice(appointment?.price ?? "0");
-    setPaymentStatus(appointment?.paymentStatus ?? "PENDING");
+    setPaymentStatus(appointment?.paymentStatus ?? "PAID");
     setNotes(appointment?.notes ?? "");
   }, [open, appointment, defaultDate]);
 

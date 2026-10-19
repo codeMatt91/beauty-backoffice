@@ -16,7 +16,7 @@ const appointmentBaseSchema = z.object({
   price: z.coerce
     .number({ invalid_type_error: "Il prezzo deve essere un numero." })
     .min(0, "Il prezzo non può essere negativo."),
-  paymentStatus: z.nativeEnum(PaymentStatus).default("PENDING"),
+  paymentStatus: z.nativeEnum(PaymentStatus).default("PAID"),
   notes: z.string().optional().nullable(),
 });
 
