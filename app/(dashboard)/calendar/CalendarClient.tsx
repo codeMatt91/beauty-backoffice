@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   startOfMonth, endOfMonth,
@@ -15,6 +15,9 @@ import { getAppointments } from "@/actions/appointments";
 import { PaymentStatus } from "@prisma/client";
 
 type ViewMode = "month" | "week" | "day";
+
+// Phones only (below Tailwind's `md`); tablets and desktop keep the month view.
+const PHONE_QUERY = "(max-width: 767px)";
 
 interface Appointment {
   id: string;
@@ -42,6 +45,13 @@ export default function CalendarClient({ initialAppointments, employees, service
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<ViewMode>("month");
   const [isPending, startTransition] = useTransition();
+
+  // Default to the day view on phones. Runs once on mount only, so a later
+  // manual view change or a resize doesn't get overridden. The server-fetched
+  // month data already covers today, so no refetch is needed here.
+  useEffect(() => {
+    if (window.matchMedia(PHONE_QUERY).matches) setView("day");
+  }, []);
 
   async function fetchAppointments(date: Date, v: ViewMode) {
     const from = v === "month" ? startOfMonth(date) : v === "week" ? startOfWeek(date, { weekStartsOn: 1 }) : startOfDay(date);
