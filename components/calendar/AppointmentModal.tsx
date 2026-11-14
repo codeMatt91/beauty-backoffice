@@ -11,6 +11,7 @@ import { X, Trash2 } from "lucide-react";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 import { Button } from "@/components/ui/Button";
 import { isSameSlot, validateWithinBusinessHours } from "@/lib/businessHours";
+import { useVisualViewportBounds } from "@/lib/useVisualViewportBounds";
 
 interface Customer {
   id: string;
@@ -98,6 +99,10 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
   const [price, setPrice] = useState("0");
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("PAID");
   const [notes, setNotes] = useState("");
+
+  // Callback ref via state: il Content viene montato nel Portal dopo l'apertura.
+  const [contentEl, setContentEl] = useState<HTMLDivElement | null>(null);
+  useVisualViewportBounds(contentEl, open);
 
   useEffect(() => {
     if (!open) return;
@@ -214,8 +219,12 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
     <Dialog.Root open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl border border-border focus:outline-none">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <Dialog.Content
+          ref={setContentEl}
+          className="dialog-viewport-bound fixed left-[50%] top-[50%] z-50 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-lg flex flex-col overflow-hidden rounded-2xl bg-card shadow-2xl border border-border focus:outline-none"
+        >
+          {/* Header fisso */}
+          <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-border">
             <Dialog.Title className="font-semibold text-foreground">
               {appointment ? "Modifica appuntamento" : "Nuovo appuntamento"}
             </Dialog.Title>
@@ -226,133 +235,140 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
             </Dialog.Close>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-5 space-y-4">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Cliente *</label>
-              <SearchableSelect
-                items={customers.map((c) => ({ id: c.id, label: `${c.lastName} ${c.firstName}` }))}
-                value={customerId}
-                onChange={setCustomerId}
-                placeholder="Cerca cliente per nome o cognome..."
-                emptyMessage="Nessun cliente trovato"
-                ariaLabel="Cliente"
-                clearLabel="Cambia cliente"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Operatrice</label>
-              <select
-                value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Nessuna assegnazione</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Prestazione *</label>
-              <select
-                value={serviceType}
-                onChange={(e) => handleServiceTypeChange(e.target.value)}
-                required
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Seleziona prestazione</option>
-                {serviceTypes.map((s) => (
-                  <option key={s.id} value={s.name}>{s.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+          {/* Il form avvolge corpo e footer, così il submit resta nel form anche fuori dall'area scrollabile */}
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-col">
+            {/* Corpo: unica area scrollabile */}
+            <div className="min-h-0 overflow-y-auto overscroll-contain p-5 space-y-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium">Inizio *</label>
-                <input
-                  type="datetime-local"
-                  value={startTime}
-                  onChange={(e) => handleStartTimeChange(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                <label className="text-sm font-medium">Cliente *</label>
+                <SearchableSelect
+                  items={customers.map((c) => ({ id: c.id, label: `${c.lastName} ${c.firstName}` }))}
+                  value={customerId}
+                  onChange={setCustomerId}
+                  placeholder="Cerca cliente per nome o cognome..."
+                  emptyMessage="Nessun cliente trovato"
+                  ariaLabel="Cliente"
+                  clearLabel="Cambia cliente"
                 />
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Fine *</label>
-                <input
-                  type="datetime-local"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-sm font-medium">Prezzo (€)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Pagamento</label>
+                <label className="text-sm font-medium">Operatrice</label>
                 <select
-                  value={paymentStatus}
-                  onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
+                  value={employeeId}
+                  onChange={(e) => setEmployeeId(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  {PAYMENT_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
+                  <option value="">Nessuna assegnazione</option>
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>{emp.firstName} {emp.lastName}</option>
                   ))}
                 </select>
               </div>
-            </div>
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Note</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={2}
-                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-              />
-            </div>
-
-            {error && (
-              <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-
-            <div className="flex items-center gap-2 pt-1">
-              {appointment && (
-                <Button
-                  variant="destructiveSoft"
-                  onClick={handleDelete}
-                  disabled={loading}
-                  className="px-3.5"
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Prestazione *</label>
+                <select
+                  value={serviceType}
+                  onChange={(e) => handleServiceTypeChange(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <Trash2 />
-                  Elimina
-                </Button>
+                  <option value="">Seleziona prestazione</option>
+                  {serviceTypes.map((s) => (
+                    <option key={s.id} value={s.name}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Inizio *</label>
+                  <input
+                    type="datetime-local"
+                    value={startTime}
+                    onChange={(e) => handleStartTimeChange(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Fine *</label>
+                  <input
+                    type="datetime-local"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Prezzo (€)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">Pagamento</label>
+                  <select
+                    value={paymentStatus}
+                    onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    {PAYMENT_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Note</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg border border-input bg-background text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Footer fisso: errore + azioni sempre visibili */}
+            <div className="shrink-0 space-y-3 border-t border-border px-5 py-4">
+              {error && (
+                <div role="alert" className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
+                  {error}
+                </div>
               )}
-              <div className="flex-1" />
-              <Button variant="outline" onClick={onClose} className="px-4">
-                Annulla
-              </Button>
-              <Button type="submit" loading={loading} className="px-4">
-                {loading ? "Salvataggio..." : appointment ? "Aggiorna" : "Crea"}
-              </Button>
+
+              <div className="flex items-center gap-2">
+                {appointment && (
+                  <Button
+                    variant="destructiveSoft"
+                    onClick={handleDelete}
+                    disabled={loading}
+                    className="px-3.5"
+                  >
+                    <Trash2 />
+                    Elimina
+                  </Button>
+                )}
+                <div className="flex-1" />
+                <Button variant="outline" onClick={onClose} className="px-4">
+                  Annulla
+                </Button>
+                <Button type="submit" loading={loading} className="px-4">
+                  {loading ? "Salvataggio..." : appointment ? "Aggiorna" : "Crea"}
+                </Button>
+              </div>
             </div>
           </form>
         </Dialog.Content>

@@ -113,3 +113,20 @@
 .animate-logo-fill-sweep {
   animation: logo-fill-sweep 1.6s ease-in-out infinite;
 }
+
+/*
+ * Modale limitato alla viewport (usato da AppointmentModal).
+ * - 90vh come fallback per i browser senza unità dinamiche, poi 90dvh
+ *   (Safari iOS: tiene conto delle barre dell'interfaccia che compaiono/spariscono).
+ * - Con [data-vv] (impostato da lib/useVisualViewportBounds.ts) si aggancia alla
+ *   visual viewport, così con la tastiera virtuale aperta il modale resta visibile.
+ *   Il selettore attributo ha specificità maggiore delle utility top-[50%].
+ */
+.dialog-viewport-bound {
+  max-height: 90vh;
+  max-height: 90dvh;
+}
+.dialog-viewport-bound[data-vv] {
+  top: calc(var(--vv-top) + var(--vv-height) / 2);
+  max-height: calc(var(--vv-height) * 0.9);
+}
