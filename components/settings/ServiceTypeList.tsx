@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Pencil, Trash2, Search } from "lucide-react";
 import { deleteServiceType } from "@/actions/serviceTypes";
+import { Button } from "@/components/ui/Button";
 
 interface ServiceType {
   id: string;
@@ -98,23 +99,25 @@ export default function ServiceTypeList({ serviceTypes, onEdit, onRefresh }: Pro
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">{formatPrice(s.defaultPrice)}</td>
                 <td className="px-4 py-3 text-muted-foreground">{formatDuration(s.durationMinutes)}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-1 justify-end">
-                    <button
+                <td className="px-4 py-1.5">
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <Button
+                      variant="outline"
+                      size="icon"
                       onClick={() => onEdit(s)}
-                      className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground"
                       aria-label={`Modifica ${s.name}`}
                     >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    <button
+                      <Pencil />
+                    </Button>
+                    <Button
+                      variant="destructiveSoft"
+                      size="icon"
                       onClick={() => handleDelete(s.id, s.name)}
-                      disabled={deleting === s.id}
-                      className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive disabled:opacity-50"
+                      loading={deleting === s.id}
                       aria-label={`Elimina ${s.name}`}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                      {deleting !== s.id && <Trash2 />}
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -146,21 +149,24 @@ export default function ServiceTypeList({ serviceTypes, onEdit, onRefresh }: Pro
                   {formatPrice(s.defaultPrice)} · {formatDuration(s.durationMinutes)}
                 </p>
               </div>
-              <div className="flex gap-1">
-                <button
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={() => onEdit(s)}
-                  className="p-2 rounded-lg hover:bg-secondary"
                   aria-label={`Modifica ${s.name}`}
                 >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
+                  <Pencil />
+                </Button>
+                <Button
+                  variant="destructiveSoft"
+                  size="icon"
                   onClick={() => handleDelete(s.id, s.name)}
-                  className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"
+                  loading={deleting === s.id}
                   aria-label={`Elimina ${s.name}`}
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                  {deleting !== s.id && <Trash2 />}
+                </Button>
               </div>
             </div>
           </div>

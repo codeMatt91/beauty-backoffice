@@ -9,6 +9,8 @@ import { PaymentStatus } from "@prisma/client";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, Trash2 } from "lucide-react";
 import SearchableSelect from "@/components/ui/SearchableSelect";
+import { Button } from "@/components/ui/Button";
+import { isSameSlot, validateWithinBusinessHours } from "@/lib/businessHours";
 
 interface Customer {
   id: string;
@@ -50,6 +52,32 @@ const PAYMENT_OPTIONS: { value: PaymentStatus; label: string }[] = [
   { value: "OPTIONAL", label: "Opzionale" },
 ];
 
+/**
+ * Slot proposto per un nuovo appuntamento. Un click su una fascia oraria
+ * (vista Giorno/Settimana) passa una data a ora piena: la si rispetta, così
+ * cliccando le 20:00 si apre 20:00–21:00. Altrimenti (vista Mese, bottone
+ * "Nuovo") si propone 09:00–10:00 come prima.
+ */
+function getDefaultSlot(defaultDate?: Date): { start: string; end: string } {
+  const base = defaultDate ?? new Date();
+  const isHourSlot =
+    defaultDate != null &&
+    base.getHours() !== 0 &&
+    base.getMinutes() === 0 &&
+    base.getSeconds() === 0 &&
+    base.getMilliseconds() === 0;
+  if (!isHourSlot) {
+    return {
+      start: format(base, "yyyy-MM-dd'T'09:00"),
+      end: format(base, "yyyy-MM-dd'T'10:00"),
+    };
+  }
+  return {
+    start: format(base, "yyyy-MM-dd'T'HH:mm"),
+    end: format(addMinutes(base, 60), "yyyy-MM-dd'T'HH:mm"),
+  };
+}
+
 function calculateEndTime(startTimeLocal: string, durationMinutes: number): string {
   return format(addMinutes(new Date(startTimeLocal), durationMinutes), "yyyy-MM-dd'T'HH:mm");
 }
@@ -82,15 +110,12 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
     setCustomerId(appointment?.customerId ?? "");
     setEmployeeId(appointment?.employeeId ?? "");
     setServiceType(appointment?.serviceType ?? "");
+    const slot = appointment ? null : getDefaultSlot(defaultDate);
     setStartTime(
-      appointment
-        ? format(new Date(appointment.startTime), "yyyy-MM-dd'T'HH:mm")
-        : format(defaultDate ?? new Date(), "yyyy-MM-dd'T'09:00")
+      appointment ? format(new Date(appointment.startTime), "yyyy-MM-dd'T'HH:mm") : slot!.start
     );
     setEndTime(
-      appointment
-        ? format(new Date(appointment.endTime), "yyyy-MM-dd'T'HH:mm")
-        : format(defaultDate ?? new Date(), "yyyy-MM-dd'T'10:00")
+      appointment ? format(new Date(appointment.endTime), "yyyy-MM-dd'T'HH:mm") : slot!.end
     );
     setPrice(appointment?.price ?? "0");
     setPaymentStatus(appointment?.paymentStatus ?? "PAID");
@@ -120,6 +145,23 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
     e.preventDefault();
     if (!customerId) {
       setError("Seleziona un cliente");
+      return;
+    }
+    // Feedback immediato; la validazione vincolante resta lato server.
+    // Uno slot invariato su un appuntamento esistente non si rivalida.
+    const slotUnchanged =
+      appointment != null &&
+      isSameSlot(
+        new Date(startTime),
+        new Date(endTime),
+        new Date(appointment.startTime),
+        new Date(appointment.endTime)
+      );
+    const hoursError = slotUnchanged
+      ? null
+      : validateWithinBusinessHours(new Date(startTime), new Date(endTime));
+    if (hoursError) {
+      setError(hoursError);
       return;
     }
     setLoading(true);
@@ -178,9 +220,9 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
               {appointment ? "Modifica appuntamento" : "Nuovo appuntamento"}
             </Dialog.Title>
             <Dialog.Close asChild>
-              <button className="p-1.5 rounded-lg hover:bg-secondary" aria-label="Chiudi">
-                <X className="w-4 h-4" />
-              </button>
+              <Button variant="outline" size="icon" className="-my-2 -mr-2" aria-label="Chiudi">
+                <X />
+              </Button>
             </Dialog.Close>
           </div>
 
@@ -294,31 +336,23 @@ export default function AppointmentModal({ open, onClose, appointment, defaultDa
 
             <div className="flex items-center gap-2 pt-1">
               {appointment && (
-                <button
-                  type="button"
+                <Button
+                  variant="destructiveSoft"
                   onClick={handleDelete}
                   disabled={loading}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors border border-destructive/20"
+                  className="px-3.5"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 />
                   Elimina
-                </button>
+                </Button>
               )}
               <div className="flex-1" />
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              >
+              <Button variant="outline" onClick={onClose} className="px-4">
                 Annulla
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-              >
+              </Button>
+              <Button type="submit" loading={loading} className="px-4">
                 {loading ? "Salvataggio..." : appointment ? "Aggiorna" : "Crea"}
-              </button>
+              </Button>
             </div>
           </form>
         </Dialog.Content>

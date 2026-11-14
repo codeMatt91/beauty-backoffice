@@ -15,7 +15,10 @@ import {
 import { it } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, CalendarDays, Grid3x3, Calendar } from "lucide-react";
 import { cn, formatTime } from "@/lib/utils";
+import { formatHour, getBusinessHourSlots } from "@/lib/businessHours";
 import { DEFAULT_SERVICE_COLOR, getContrastingTextColor } from "@/lib/colors";
+import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import AppointmentModal from "./AppointmentModal";
 import DayView from "./DayView";
 import { useState } from "react";
@@ -184,7 +187,7 @@ export default function CalendarView({
   function renderWeekView() {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
     const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-    const hours = Array.from({ length: 13 }, (_, i) => i + 8);
+    const hours = getBusinessHourSlots();
 
     return (
       <div className="flex-1 overflow-auto">
@@ -209,7 +212,7 @@ export default function CalendarView({
         {hours.map((hour) => (
           <div key={hour} className="grid grid-cols-8 border-b border-border min-h-[60px]">
             <div className="px-2 py-1 text-[10px] text-muted-foreground text-right border-r border-border">
-              {hour}:00
+              {formatHour(hour)}
             </div>
             {days.map((d) => {
               const slotApts = appointments.filter((a) => {
@@ -257,21 +260,19 @@ export default function CalendarView({
       <div className="flex flex-col gap-2 px-4 py-3 border-b border-border bg-card lg:flex-row lg:items-center">
         {/* Riga 1 (mobile) / gruppo sinistro (desktop): Oggi + navigazione data */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={onGoToToday}
-            className="shrink-0 px-3 py-1.5 text-sm font-medium rounded-lg border border-border hover:bg-secondary transition-colors"
-          >
+          <Button variant="outline" onClick={onGoToToday}>
             Oggi
-          </button>
+          </Button>
 
           <div className="flex items-center gap-1 flex-1 justify-center lg:flex-none lg:justify-start">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onNavigate(-1)}
-              className="p-1.5 rounded-lg hover:bg-secondary"
               aria-label="Periodo precedente"
             >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+              <ChevronLeft />
+            </Button>
             <span className={cn(
               "text-sm font-semibold text-foreground min-w-[160px] text-center capitalize transition-opacity",
               isPending && "opacity-50"
@@ -283,55 +284,38 @@ export default function CalendarView({
                 : format(currentDate, "EEEE d MMMM yyyy", { locale: it })
               }
             </span>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => onNavigate(1)}
-              className="p-1.5 rounded-lg hover:bg-secondary"
               aria-label="Periodo successivo"
             >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              <ChevronRight />
+            </Button>
           </div>
         </div>
 
         {/* Riga 2 (mobile) / gruppo destro (desktop): vista + nuovo appuntamento */}
         <div className="flex items-center justify-between gap-2 lg:ml-auto lg:justify-end">
-          <div className="flex items-center rounded-lg border border-border overflow-hidden">
-            <button
-              onClick={() => onViewChange("month")}
-              className={cn("px-3 py-1.5 text-sm font-medium flex items-center gap-1.5 transition-colors",
-                view === "month" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
-              )}
-            >
-              <Grid3x3 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Mese</span>
-            </button>
-            <button
-              onClick={() => onViewChange("week")}
-              className={cn("px-3 py-1.5 text-sm font-medium flex items-center gap-1.5 transition-colors",
-                view === "week" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
-              )}
-            >
-              <CalendarDays className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Settimana</span>
-            </button>
-            <button
-              onClick={() => onViewChange("day")}
-              className={cn("px-3 py-1.5 text-sm font-medium flex items-center gap-1.5 transition-colors",
-                view === "day" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
-              )}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Giorno</span>
-            </button>
-          </div>
+          <SegmentedControl
+            ariaLabel="Vista calendario"
+            value={view}
+            onChange={onViewChange}
+            options={[
+              { value: "month", ariaLabel: "Mese", label: <><Grid3x3 /><span className="hidden sm:inline">Mese</span></> },
+              { value: "week", ariaLabel: "Settimana", label: <><CalendarDays /><span className="hidden sm:inline">Settimana</span></> },
+              { value: "day", ariaLabel: "Giorno", label: <><Calendar /><span className="hidden sm:inline">Giorno</span></> },
+            ]}
+          />
 
-          <button
+          <Button
             onClick={() => openNew(new Date())}
-            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+            aria-label="Nuovo appuntamento"
+            className="max-sm:w-11 max-sm:px-0"
           >
-            <Plus className="w-4 h-4" />
+            <Plus />
             <span className="hidden sm:inline">Appuntamento</span>
-          </button>
+          </Button>
         </div>
       </div>
 

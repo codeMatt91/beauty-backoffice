@@ -5,6 +5,7 @@ import { getAllUsers, deleteUser } from "@/actions/users";
 import { Plus, UserCog } from "lucide-react";
 import UserTable, { UserRecord } from "@/components/employees/UserTable";
 import UserModal from "@/components/employees/UserModal";
+import { Button } from "@/components/ui/Button";
 
 interface Props {
   initialUsers: UserRecord[];
@@ -53,11 +54,10 @@ export default function EmployeesClient({ initialUsers }: Props) {
               <p className="text-sm text-muted-foreground">{users.length} account</p>
             </div>
           </div>
-          <button onClick={() => { setEditingUser(null); setModalOpen(true); }}
-            className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90">
-            <Plus className="w-4 h-4" />
+          <Button onClick={() => { setEditingUser(null); setModalOpen(true); }}>
+            <Plus />
             Nuovo utente
-          </button>
+          </Button>
         </div>
 
         <UserTable

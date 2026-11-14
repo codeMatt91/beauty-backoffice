@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { requestPasswordReset } from "@/actions/passwordReset";
+import { Button } from "@/components/ui/Button";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -65,13 +66,9 @@ export default function ForgotPasswordPage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 px-4 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors"
-            >
+            <Button type="submit" size="lg" loading={loading} className="w-full">
               {loading ? "Invio in corso..." : "Invia link di reset"}
-            </button>
+            </Button>
           </form>
         )}
 

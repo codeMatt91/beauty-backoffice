@@ -5,6 +5,7 @@ import { Archive, Download, AlertTriangle, CheckCircle2, Scissors, Plus } from "
 import { getServiceTypes } from "@/actions/serviceTypes";
 import ServiceTypeList from "@/components/settings/ServiceTypeList";
 import ServiceTypeForm from "@/components/settings/ServiceTypeForm";
+import { Button } from "@/components/ui/Button";
 
 interface ServiceType {
   id: string;
@@ -108,13 +109,10 @@ export default function SettingsClient({ initialServiceTypes }: Props) {
                 </p>
               </div>
             </div>
-            <button
-              onClick={openCreate}
-              className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shrink-0"
-            >
-              <Plus className="w-4 h-4" />
+            <Button onClick={openCreate} aria-label="Nuova prestazione" className="max-sm:w-11 max-sm:px-0">
+              <Plus />
               <span className="hidden sm:inline">Nuova prestazione</span>
-            </button>
+            </Button>
           </div>
 
           <div className="p-5">
@@ -171,14 +169,10 @@ export default function SettingsClient({ initialServiceTypes }: Props) {
               </p>
             </div>
 
-            <button
-              onClick={handlePurge}
-              disabled={loading}
-              className="flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 disabled:opacity-50 transition-colors"
-            >
-              <Download className="w-4 h-4" />
+            <Button variant="destructive" onClick={handlePurge} loading={loading}>
+              {!loading && <Download />}
               {loading ? "Elaborazione in corso..." : "Esporta e cancella dati"}
-            </button>
+            </Button>
 
             {/* Result feedback */}
             {result?.success && (

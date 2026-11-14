@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { PaymentStatus } from "@prisma/client";
 import { ActionResult, zodErrorToMessage } from "@/lib/actionResult";
+import { isSameSlot, validateWithinBusinessHours } from "@/lib/businessHours";
 
 const appointmentBaseSchema = z.object({
   customerId: z.string().min(1, "Seleziona un cliente."),
@@ -20,10 +21,13 @@ const appointmentBaseSchema = z.object({
   notes: z.string().optional().nullable(),
 });
 
-const appointmentSchema = appointmentBaseSchema.refine(
-  (data) => new Date(data.endTime) > new Date(data.startTime),
-  { message: "L'orario di fine deve essere successivo all'inizio.", path: ["endTime"] }
-);
+const appointmentSchema = appointmentBaseSchema.superRefine((data, ctx) => {
+  // Copre anche il controllo fine > inizio. La validazione degli orari vive
+  // qui (server) perché la Server Action è un endpoint invocabile
+  // direttamente: il controllo nel modale è solo UX.
+  const error = validateWithinBusinessHours(new Date(data.startTime), new Date(data.endTime));
+  if (error) ctx.addIssue({ code: z.ZodIssueCode.custom, message: error, path: ["endTime"] });
+});
 
 const appointmentUpdateSchema = appointmentBaseSchema.partial().refine(
   (d) => !d.startTime || !d.endTime || new Date(d.endTime) > new Date(d.startTime),
@@ -67,6 +71,24 @@ export async function updateAppointment(id: string, data: Partial<z.infer<typeof
   await requireAuth();
   const parsed = appointmentUpdateSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: zodErrorToMessage(parsed.error) };
+
+  // Update parziale: ricostruisce lo slot effettivo unendo i nuovi valori a
+  // quelli salvati, così non si aggira il controllo inviando un solo campo.
+  // Se lo slot non cambia (es. si aggiorna solo il pagamento) non si valida:
+  // gli appuntamenti storici fuori fascia restano modificabili.
+  if (parsed.data.startTime || parsed.data.endTime) {
+    const current = await prisma.appointment.findUnique({
+      where: { id },
+      select: { startTime: true, endTime: true },
+    });
+    if (!current) return { success: false, error: "Appuntamento non trovato." };
+    const nextStart = parsed.data.startTime ? new Date(parsed.data.startTime) : current.startTime;
+    const nextEnd = parsed.data.endTime ? new Date(parsed.data.endTime) : current.endTime;
+    if (!isSameSlot(nextStart, nextEnd, current.startTime, current.endTime)) {
+      const hoursError = validateWithinBusinessHours(nextStart, nextEnd);
+      if (hoursError) return { success: false, error: hoursError };
+    }
+  }
 
   await prisma.appointment.update({
     where: { id },

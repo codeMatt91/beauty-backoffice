@@ -2,12 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  DAY_VIEW_START_HOUR,
-  DAY_VIEW_END_HOUR,
   LANE_OFFSET_PX,
   LANE_OFFSET_PX_MOBILE,
   computeDayViewLayout,
 } from "@/lib/calendarLayout";
+import { formatHour, getBusinessHourSlots, getBusinessHours } from "@/lib/businessHours";
 import AppointmentBlock from "./AppointmentBlock";
 import type { Appointment } from "./CalendarView";
 
@@ -20,11 +19,9 @@ interface DayViewProps {
   onAppointmentClick: (appointment: Appointment) => void;
 }
 
-const HOURS = Array.from(
-  { length: DAY_VIEW_END_HOUR - DAY_VIEW_START_HOUR },
-  (_, i) => i + DAY_VIEW_START_HOUR
-);
-const GRID_HEIGHT_PX = (DAY_VIEW_END_HOUR - DAY_VIEW_START_HOUR) * 60;
+const BUSINESS_HOURS = getBusinessHours();
+const HOURS = getBusinessHourSlots(BUSINESS_HOURS);
+const GRID_HEIGHT_PX = HOURS.length * 60;
 const MOBILE_QUERY = "(max-width: 1023px)"; // matches the app's `lg` breakpoint convention
 
 export default function DayView({
@@ -54,6 +51,8 @@ export default function DayView({
   const layouts = useMemo(
     () =>
       computeDayViewLayout(appointments, {
+        startHour: BUSINESS_HOURS.openHour,
+        endHour: BUSINESS_HOURS.closeHour,
         laneOffsetPx: isMobile ? LANE_OFFSET_PX_MOBILE : LANE_OFFSET_PX,
       }),
     [appointments, isMobile]
@@ -92,7 +91,7 @@ export default function DayView({
               style={{ height: 60 }}
             >
               <div className="px-2 py-1 text-[10px] text-muted-foreground text-right border-r border-border">
-                {hour}:00
+                {formatHour(hour)}
               </div>
               <div
                 onClick={() => {

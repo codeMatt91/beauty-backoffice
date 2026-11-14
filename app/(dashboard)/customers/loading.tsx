@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/Skeleton";
+import { Button } from "@/components/ui/Button";
 import { Users, Plus } from "lucide-react";
 
 export default function CustomersLoading() {
@@ -13,13 +14,10 @@ export default function CustomersLoading() {
               <Skeleton className="h-4 w-32" />
             </div>
           </div>
-          <button
-            disabled
-            className="flex items-center gap-1.5 px-3 py-2 bg-primary/50 text-primary-foreground rounded-lg text-sm font-medium"
-          >
-            <Plus className="w-4 h-4" />
+          <Button disabled>
+            <Plus />
             Nuovo cliente
-          </button>
+          </Button>
         </div>
 
         <Skeleton className="h-10 w-full rounded-lg" />

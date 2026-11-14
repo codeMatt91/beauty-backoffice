@@ -5,8 +5,12 @@
  * unit test in isolation if a test runner is ever added to this repo.
  */
 
-export const DAY_VIEW_START_HOUR = 8;
-export const DAY_VIEW_END_HOUR = 20; // grid spans [08:00, 20:00) → 12h
+import { DEFAULT_BUSINESS_HOURS } from "./businessHours";
+
+// Defaults only — callers should pass the salon's hours via options
+// (see `getBusinessHours()` in lib/businessHours.ts).
+export const DAY_VIEW_START_HOUR = DEFAULT_BUSINESS_HOURS.openHour;
+export const DAY_VIEW_END_HOUR = DEFAULT_BUSINESS_HOURS.closeHour; // grid spans [open, close)
 export const PX_PER_MINUTE = 1; // 60px per hour
 export const MIN_BLOCK_HEIGHT_PX = 28;
 export const LANE_OFFSET_PX = 12; // desktop cascade step

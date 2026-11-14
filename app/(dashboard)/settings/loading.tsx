@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/Skeleton";
+import { Button } from "@/components/ui/Button";
 import { Archive, Download, AlertTriangle, Scissors, Plus } from "lucide-react";
 
 export default function SettingsLoading() {
@@ -18,10 +19,10 @@ export default function SettingsLoading() {
                 </p>
               </div>
             </div>
-            <button disabled className="flex items-center gap-1.5 px-3 py-2 bg-primary/50 text-primary-foreground rounded-lg text-sm font-medium shrink-0">
-              <Plus className="w-4 h-4" />
+            <Button disabled aria-label="Nuova prestazione" className="max-sm:w-11 max-sm:px-0">
+              <Plus />
               <span className="hidden sm:inline">Nuova prestazione</span>
-            </button>
+            </Button>
           </div>
 
           <div className="p-5 space-y-3">
@@ -94,10 +95,10 @@ export default function SettingsLoading() {
               </p>
             </div>
 
-            <button disabled className="flex items-center gap-2 px-4 py-2.5 bg-amber-600/50 text-white rounded-lg text-sm font-medium">
-              <Download className="w-4 h-4" />
+            <Button variant="destructive" disabled>
+              <Download />
               Esporta e cancella dati
-            </button>
+            </Button>
           </div>
         </div>
       </div>

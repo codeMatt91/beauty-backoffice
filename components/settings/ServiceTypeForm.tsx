@@ -5,6 +5,7 @@ import { createServiceType, updateServiceType } from "@/actions/serviceTypes";
 import { DEFAULT_SERVICE_COLOR } from "@/lib/colors";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface ServiceType {
   id: string;
@@ -78,9 +79,9 @@ export default function ServiceTypeForm({ open, onClose, serviceType, existingSe
               {serviceType ? "Modifica prestazione" : "Nuova prestazione"}
             </Dialog.Title>
             <Dialog.Close asChild>
-              <button className="p-1.5 rounded-lg hover:bg-secondary" aria-label="Chiudi">
-                <X className="w-4 h-4" />
-              </button>
+              <Button variant="outline" size="icon" className="-my-2 -mr-2" aria-label="Chiudi">
+                <X />
+              </Button>
             </Dialog.Close>
           </div>
 
@@ -164,20 +165,12 @@ export default function ServiceTypeForm({ open, onClose, serviceType, existingSe
             )}
 
             <div className="flex gap-2 pt-1">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-2 rounded-lg text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              >
+              <Button variant="outline" onClick={onClose} className="flex-1">
                 Annulla
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-              >
+              </Button>
+              <Button type="submit" loading={loading} className="flex-1">
                 {loading ? "Salvataggio..." : serviceType ? "Aggiorna" : "Crea"}
-              </button>
+              </Button>
             </div>
           </form>
         </Dialog.Content>

@@ -9,6 +9,7 @@ import { Role } from "@prisma/client";
 import UserProfileButton from "./UserProfileButton";
 import ThemeToggle from "./ThemeToggle";
 import NotificationBell from "./NotificationBell";
+import { Button } from "@/components/ui/Button";
 
 const PAGE_TITLES: Record<string, string> = {
   "/calendar": "Calendario",
@@ -36,13 +37,15 @@ export default function SharedHeader({ firstName, lastName, email, role, hasUnre
   return (
     <header className="h-14 shrink-0 border-b border-border bg-card px-4 flex items-center justify-between lg:px-6">
       <div className="flex items-center gap-3">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setConfirmOpen(true)}
           aria-label="Esci"
-          className="lg:hidden p-1.5 rounded-md hover:bg-secondary"
+          className="-ml-2 lg:hidden"
         >
-          <LogOut className="w-5 h-5" />
-        </button>
+          <LogOut />
+        </Button>
         <h1 className="text-base font-semibold text-foreground">{title}</h1>
       </div>
 
@@ -69,16 +72,17 @@ export default function SharedHeader({ firstName, lastName, email, role, hasUnre
             </Dialog.Description>
             <div className="flex gap-2 pt-4">
               <Dialog.Close asChild>
-                <button className="flex-1 py-2 rounded-lg text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80">
+                <Button variant="outline" className="flex-1">
                   Annulla
-                </button>
+                </Button>
               </Dialog.Close>
-              <button
+              <Button
+                variant="destructive"
                 onClick={() => signOut({ callbackUrl: "/login" })}
-                className="flex-1 py-2 rounded-lg text-sm font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                className="flex-1"
               >
                 Esci
-              </button>
+              </Button>
             </div>
           </Dialog.Content>
         </Dialog.Portal>

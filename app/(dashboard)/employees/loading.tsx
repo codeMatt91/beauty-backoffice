@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/Skeleton";
+import { Button } from "@/components/ui/Button";
 import { UserCog, Plus } from "lucide-react";
 
 export default function EmployeesLoading() {
@@ -13,10 +14,10 @@ export default function EmployeesLoading() {
               <Skeleton className="h-4 w-20" />
             </div>
           </div>
-          <button disabled className="flex items-center gap-1.5 px-3 py-2 bg-primary/50 text-white rounded-lg text-sm font-medium">
-            <Plus className="w-4 h-4" />
+          <Button disabled>
+            <Plus />
             Nuovo utente
-          </button>
+          </Button>
         </div>
 
         {/* Table – Desktop */}

@@ -7,6 +7,8 @@ import { getFinancialSummary, getExpenses, deleteExpense } from "@/actions/expen
 import { StatCard } from "@/components/finance/StatCard";
 import { AddExpenseModal } from "@/components/finance/AddExpenseModal";
 import FinancialChart from "@/components/finance/FinancialChart";
+import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { formatCurrency } from "@/lib/utils";
 import {
   TrendingUp,
@@ -166,37 +168,31 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
               ))}
             </select>
 
-            <div className="flex items-center rounded-lg border border-border overflow-hidden w-full lg:w-auto">
-              <button
-                onClick={() => {
-                  setGranularity("day");
+            <SegmentedControl
+              ariaLabel="Granularità"
+              className="w-full lg:w-auto"
+              value={granularity}
+              onChange={(next) => {
+                setGranularity(next);
+                if (next === "day") {
                   setDateFrom(format(startOfMonth(new Date()), "yyyy-MM-dd"));
                   setDateTo(format(endOfMonth(new Date()), "yyyy-MM-dd"));
-                }}
-                className={`flex-1 lg:flex-none px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "day" ? "bg-primary text-white" : "hover:bg-secondary"}`}
-              >
-                Giornaliero
-              </button>
-              <button
-                onClick={() => setGranularity("month")}
-                className={`flex-1 lg:flex-none px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "month" ? "bg-primary text-white" : "hover:bg-secondary"}`}
-              >
-                Mensile
-              </button>
-              <button
-                onClick={() => {
-                  setGranularity("year");
+                } else if (next === "year") {
                   setDateFrom(format(startOfYear(new Date()), "yyyy-MM-dd"));
                   setDateTo(format(endOfYear(new Date()), "yyyy-MM-dd"));
-                }}
-                className={`flex-1 lg:flex-none px-3 py-1.5 text-sm font-medium transition-colors ${granularity === "year" ? "bg-primary text-white" : "hover:bg-secondary"}`}
-              >
-                Annuale
-              </button>
-            </div>
+                }
+              }}
+              options={[
+                { value: "day", label: "Giornaliero" },
+                { value: "month", label: "Mensile" },
+                { value: "year", label: "Annuale" },
+              ]}
+            />
 
             <div className="grid grid-cols-2 gap-2 lg:flex lg:gap-3">
-              <button
+              <Button
+                variant="outline"
+                loading={exportingMonth}
                 onClick={async () => {
                   setExportError(null);
                   setExportingMonth(true);
@@ -209,14 +205,14 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
                     setExportingMonth(false);
                   }
                 }}
-                disabled={exportingMonth}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
               >
-                <Download className="w-3.5 h-3.5" />
-                {exportingMonth ? "..." : "Esporta mese"}
-              </button>
+                {!exportingMonth && <Download />}
+                Esporta mese
+              </Button>
 
-              <button
+              <Button
+                variant="outline"
+                loading={exportingYear}
                 onClick={async () => {
                   setExportError(null);
                   setExportingYear(true);
@@ -229,12 +225,10 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
                     setExportingYear(false);
                   }
                 }}
-                disabled={exportingYear}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-secondary transition-colors disabled:opacity-50"
               >
-                <Download className="w-3.5 h-3.5" />
-                {exportingYear ? "..." : "Esporta anno"}
-              </button>
+                {!exportingYear && <Download />}
+                Esporta anno
+              </Button>
             </div>
           </div>
 
@@ -285,13 +279,10 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
         <div className="bg-card rounded-xl border border-border overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <h3 className="font-semibold text-foreground">Spese del periodo</h3>
-            <button
-              onClick={() => setAddExpenseOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90"
-            >
-              <Plus className="w-4 h-4" />
+            <Button onClick={() => setAddExpenseOpen(true)}>
+              <Plus />
               Aggiungi spesa
-            </button>
+            </Button>
           </div>
 
           <div className="overflow-x-auto">
@@ -321,17 +312,18 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
                       -{formatCurrency(parseFloat(e.amount))}
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <button
+                      <Button
+                        variant="destructiveSoft"
+                        size="icon"
                         onClick={async () => {
                           if (!confirm("Eliminare questa spesa?")) return;
                           await deleteExpense(e.id);
                           loadData();
                         }}
-                        className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                         aria-label={`Elimina spesa: ${e.description}`}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                        <Trash2 />
+                      </Button>
                     </td>
                   </tr>
                 ))}

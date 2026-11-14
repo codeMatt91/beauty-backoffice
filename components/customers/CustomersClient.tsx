@@ -4,6 +4,7 @@ import { useState } from "react";
 import { getCustomers } from "@/actions/customers";
 import CustomerTable from "@/components/customers/CustomerTable";
 import CustomerForm from "@/components/customers/CustomerForm";
+import { Button } from "@/components/ui/Button";
 import { Plus, Users } from "lucide-react";
 
 interface CustomerRecord {
@@ -54,13 +55,10 @@ export default function CustomersClient({ initialCustomers }: Props) {
               <p className="text-sm text-muted-foreground">{customers.length} clienti registrati</p>
             </div>
           </div>
-          <button
-            onClick={openCreate}
-            className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
+          <Button onClick={openCreate}>
+            <Plus />
             Nuovo cliente
-          </button>
+          </Button>
         </div>
 
         <CustomerTable

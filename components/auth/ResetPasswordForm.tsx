@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { resetPassword } from "@/actions/passwordReset";
+import { Button } from "@/components/ui/Button";
 
 export default function ResetPasswordForm() {
   const router = useRouter();
@@ -112,13 +113,9 @@ export default function ResetPasswordForm() {
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-2.5 px-4 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors"
-      >
+      <Button type="submit" size="lg" loading={loading} className="w-full">
         {loading ? "Salvataggio..." : "Reimposta password"}
-      </button>
+      </Button>
     </form>
   );
 }

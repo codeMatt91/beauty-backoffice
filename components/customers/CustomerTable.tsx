@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { deleteCustomer } from "@/actions/customers";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 
 interface Customer {
   id: string;
@@ -154,28 +155,30 @@ export default function CustomerTable({
                 {/* <td className="px-4 py-3 text-muted-foreground text-xs">
                   {formatDate(c.createdAt)}
                 </td> */}
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-1 justify-end">
-                    <button
+                <td className="px-4 py-1.5">
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <Button
+                      variant="outline"
+                      size="icon"
                       onClick={() => onEdit(c)}
-                      className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground"
                       aria-label={`Modifica ${c.firstName} ${c.lastName}`}
                     >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    <button
+                      <Pencil />
+                    </Button>
+                    <Button
+                      variant="destructiveSoft"
+                      size="icon"
                       onClick={() =>
                         handleDelete(
                           c.id,
                           `${c.firstName} ${c.lastName}`,
                         )
                       }
-                      disabled={deleting === c.id}
-                      className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive disabled:opacity-50"
+                      loading={deleting === c.id}
                       aria-label={`Elimina ${c.firstName} ${c.lastName}`}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                      {deleting !== c.id && <Trash2 />}
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -211,26 +214,29 @@ export default function CustomerTable({
                   </a>
                 )}
               </div>
-              <div className="flex gap-1">
-                <button
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={() => onEdit(c)}
-                  className="p-2 rounded-lg hover:bg-secondary"
                   aria-label={`Modifica ${c.firstName} ${c.lastName}`}
                 >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
+                  <Pencil />
+                </Button>
+                <Button
+                  variant="destructiveSoft"
+                  size="icon"
                   onClick={() =>
                     handleDelete(
                       c.id,
                       `${c.firstName} ${c.lastName}`,
                     )
                   }
-                  className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"
+                  loading={deleting === c.id}
                   aria-label={`Elimina ${c.firstName} ${c.lastName}`}
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                  {deleting !== c.id && <Trash2 />}
+                </Button>
               </div>
             </div>
             <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">

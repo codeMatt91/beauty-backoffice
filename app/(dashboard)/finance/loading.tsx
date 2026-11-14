@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/Skeleton";
+import { Button } from "@/components/ui/Button";
 import { Filter, TrendingUp, TrendingDown, DollarSign, Plus } from "lucide-react";
 
 export default function FinanceLoading() {
@@ -43,10 +44,10 @@ export default function FinanceLoading() {
         <div className="bg-card rounded-xl border border-border overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <h3 className="font-semibold text-foreground">Spese del periodo</h3>
-            <button disabled className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/50 text-white rounded-lg text-sm font-medium">
-              <Plus className="w-4 h-4" />
+            <Button disabled>
+              <Plus />
               Aggiungi spesa
-            </button>
+            </Button>
           </div>
           <div className="bg-secondary h-11" />
           <div className="divide-y divide-border">

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createCustomer, updateCustomer } from "@/actions/customers";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface Customer {
   id: string;
@@ -86,9 +87,9 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
               {customer ? "Modifica cliente" : "Nuovo cliente"}
             </Dialog.Title>
             <Dialog.Close asChild>
-              <button className="p-1.5 rounded-lg hover:bg-secondary" aria-label="Chiudi">
-                <X className="w-4 h-4" />
-              </button>
+              <Button variant="outline" size="icon" className="-my-2 -mr-2" aria-label="Chiudi">
+                <X />
+              </Button>
             </Dialog.Close>
           </div>
 
@@ -166,20 +167,12 @@ export default function CustomerForm({ open, onClose, customer, onSaved }: Props
             )}
 
             <div className="flex gap-2 pt-1">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-2 rounded-lg text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              >
+              <Button variant="outline" onClick={onClose} className="flex-1">
                 Annulla
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-              >
+              </Button>
+              <Button type="submit" loading={loading} className="flex-1">
                 {loading ? "Salvataggio..." : customer ? "Aggiorna" : "Crea"}
-              </button>
+              </Button>
             </div>
           </form>
         </Dialog.Content>

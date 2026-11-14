@@ -62,6 +62,15 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        raised: "var(--shadow-raised)",
+        "raised-hover": "var(--shadow-raised-hover)",
+        "raised-primary": "var(--shadow-raised-primary)",
+        "raised-primary-hover": "var(--shadow-raised-primary-hover)",
+        "raised-danger": "var(--shadow-raised-danger)",
+        pressed: "var(--shadow-pressed)",
+        recessed: "var(--shadow-recessed)",
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

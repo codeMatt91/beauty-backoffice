@@ -3,6 +3,7 @@
 import { Pencil, Trash2, Shield, User as UserIcon } from "lucide-react";
 import { Role } from "@prisma/client";
 import { formatDate } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 
 export interface UserRecord {
   id: string;
@@ -50,22 +51,24 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground text-xs">{formatDate(u.createdAt)}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-1 justify-end">
-                    <button
+                <td className="px-4 py-1.5">
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <Button
+                      variant="outline"
+                      size="icon"
                       onClick={() => onEdit(u)}
-                      className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground"
                       aria-label={`Modifica ${u.firstName} ${u.lastName}`}
                     >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    <button
+                      <Pencil />
+                    </Button>
+                    <Button
+                      variant="destructiveSoft"
+                      size="icon"
                       onClick={() => onDelete(u.id, `${u.firstName} ${u.lastName}`)}
-                      className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
                       aria-label={`Elimina ${u.firstName} ${u.lastName}`}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                      <Trash2 />
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -83,21 +86,23 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
                 <p className="font-medium text-foreground truncate">{u.firstName} {u.lastName}</p>
                 <p className="text-sm text-muted-foreground truncate">{u.email}</p>
               </div>
-              <div className="flex gap-1 shrink-0">
-                <button
+              <div className="flex gap-2 shrink-0">
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={() => onEdit(u)}
-                  className="p-2 rounded-lg hover:bg-secondary"
                   aria-label={`Modifica ${u.firstName} ${u.lastName}`}
                 >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
+                  <Pencil />
+                </Button>
+                <Button
+                  variant="destructiveSoft"
+                  size="icon"
                   onClick={() => onDelete(u.id, `${u.firstName} ${u.lastName}`)}
-                  className="p-2 rounded-lg hover:bg-destructive/10 text-destructive"
                   aria-label={`Elimina ${u.firstName} ${u.lastName}`}
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                  <Trash2 />
+                </Button>
               </div>
             </div>
             <div className="flex items-center gap-3 mt-2 text-xs">

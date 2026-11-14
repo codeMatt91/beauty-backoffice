@@ -5,6 +5,7 @@ import { createUser, updateUser } from "@/actions/users";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Role } from "@prisma/client";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import type { UserRecord } from "./UserTable";
 
 export default function UserModal({
@@ -55,9 +56,9 @@ export default function UserModal({
               {user ? "Modifica utente" : "Nuovo utente"}
             </Dialog.Title>
             <Dialog.Close asChild>
-              <button className="p-1.5 rounded-lg hover:bg-secondary" aria-label="Chiudi">
-                <X className="w-4 h-4" />
-              </button>
+              <Button variant="outline" size="icon" className="-my-2 -mr-2" aria-label="Chiudi">
+                <X />
+              </Button>
             </Dialog.Close>
           </div>
           <form onSubmit={handleSubmit} className="p-5 space-y-4">
@@ -122,20 +123,12 @@ export default function UserModal({
               </div>
             )}
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-2 rounded-lg text-sm font-medium bg-secondary"
-              >
+              <Button variant="outline" onClick={onClose} className="flex-1">
                 Annulla
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-white disabled:opacity-50"
-              >
-                {loading ? "..." : user ? "Aggiorna" : "Crea"}
-              </button>
+              </Button>
+              <Button type="submit" loading={loading} className="flex-1">
+                {user ? "Aggiorna" : "Crea"}
+              </Button>
             </div>
           </form>
         </Dialog.Content>
