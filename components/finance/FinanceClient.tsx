@@ -9,6 +9,7 @@ import { AddExpenseModal } from "@/components/finance/AddExpenseModal";
 import FinancialChart from "@/components/finance/FinancialChart";
 import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { formatCurrency } from "@/lib/utils";
 import {
   TrendingUp,
@@ -143,18 +144,20 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
 
           <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <input
-                type="date"
+              <DatePicker
+                nativeOnMobile
                 value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="w-full min-w-0 sm:w-auto px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                onChange={setDateFrom}
+                ariaLabel="Data inizio"
+                className="sm:w-auto md:min-w-[9.5rem]"
               />
               <span className="hidden sm:inline text-muted-foreground text-sm">→</span>
-              <input
-                type="date"
+              <DatePicker
+                nativeOnMobile
                 value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="w-full min-w-0 sm:w-auto px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                onChange={setDateTo}
+                ariaLabel="Data fine"
+                className="sm:w-auto md:min-w-[9.5rem]"
               />
             </div>
 
