@@ -31,8 +31,13 @@ interface DatePickerProps {
   nativeOnMobile?: boolean;
 }
 
+// iOS Safari gives `<input type="date">` an intrinsic min-width and ignores
+// `width: 100%` while the native appearance is on, so the field overflows its
+// container on narrow screens. `appearance-none` + `block`/`max-w-full`/`min-w-0`
+// make it obey the parent width; `min-h` keeps an empty value from collapsing.
+// Text alignment of the value is fixed in globals.css (`.native-date-input`).
 const NATIVE_INPUT_CLASS =
-  "w-full min-w-0 px-3 py-1.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary";
+  "native-date-input block w-full max-w-full min-w-0 min-h-[2.25rem] appearance-none px-3 py-1.5 rounded-lg border border-input bg-background text-left text-sm focus:outline-none focus:ring-2 focus:ring-primary";
 
 /** Parses `yyyy-MM-dd` as a *local* date (avoids the UTC off-by-one of `new Date(str)`). */
 function parseValue(value: string): Date | undefined {

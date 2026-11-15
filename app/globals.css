@@ -98,6 +98,17 @@
   display: none;
 }
 
+/* Native date input (phones): iOS Safari centers the value and pads it in a
+   shadow element; align it like the other fields and let it shrink. */
+.native-date-input::-webkit-date-and-time-value {
+  text-align: left;
+  min-width: 0;
+  margin: 0;
+}
+.native-date-input::-webkit-datetime-edit {
+  padding: 0;
+}
+
 /* Navigation loader: watermark logo filling top-to-bottom */
 @keyframes logo-fill-sweep {
   0% {

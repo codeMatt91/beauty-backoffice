@@ -142,8 +142,8 @@ export default function FinanceClient({ initialData, initialExpenses, initialSer
             Filtri
           </div>
 
-          <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
+            <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
               <DatePicker
                 nativeOnMobile
                 value={dateFrom}
